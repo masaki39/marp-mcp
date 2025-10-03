@@ -16,8 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export const initPresentationSchema = z.object({
-  projectPath: z.string().describe("Path where the project directory will be created"),
-  projectName: z.string().describe("Name of the presentation project"),
+  projectPath: z.string().describe("Path to the directory where presentation files will be created (current directory)"),
   presentationTitle: z.string().describe("Title of the presentation"),
   presentationSubtitle: z.string().optional().describe("Subtitle of the presentation"),
   description: z.string().optional().describe("Brief description of the presentation"),
@@ -25,42 +24,24 @@ export const initPresentationSchema = z.object({
 
 export async function initPresentation({
   projectPath,
-  projectName,
   presentationTitle,
   presentationSubtitle,
   description,
 }: z.infer<typeof initPresentationSchema>): Promise<ToolResponse> {
   try {
-    // Create project directory
-    const fullPath = path.resolve(projectPath, projectName);
-
-    // Check if directory already exists
-    try {
-      await fs.access(fullPath);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error: Directory already exists at ${fullPath}`,
-          },
-        ],
-      };
-    } catch {
-      // Directory doesn't exist, proceed
-    }
+    // Use projectPath as the presentation directory
+    const fullPath = path.resolve(projectPath);
 
     // Create directory structure
     await fs.mkdir(fullPath, { recursive: true });
-    await fs.mkdir(path.join(fullPath, "themes"), { recursive: true });
-    await fs.mkdir(path.join(fullPath, "attachments", "images"), { recursive: true });
-    await fs.mkdir(path.join(fullPath, "attachments", "videos"), { recursive: true });
-    await fs.mkdir(path.join(fullPath, "attachments", "data"), { recursive: true });
+    await fs.mkdir(path.join(fullPath, "attachments"), { recursive: true });
+    await fs.mkdir(path.join(fullPath, ".vscode"), { recursive: true });
 
     // Read template files
     const templatesDir = path.join(__dirname, "..", "templates");
 
     const cssTemplate = await fs.readFile(
-      path.join(templatesDir, "academic_custom.css"),
+      path.join(templatesDir, "custom_theme.css"),
       "utf-8"
     );
 
@@ -74,11 +55,6 @@ export async function initPresentation({
       "utf-8"
     );
 
-    const gitignoreTemplate = await fs.readFile(
-      path.join(templatesDir, "gitignore.template"),
-      "utf-8"
-    );
-
     // Replace placeholders
     slidesTemplate = slidesTemplate
       .replace(/\{\{PRESENTATION_TITLE\}\}/g, presentationTitle)
@@ -88,11 +64,19 @@ export async function initPresentation({
       .replace(/\{\{PRESENTATION_TITLE\}\}/g, presentationTitle)
       .replace(/\{\{PRESENTATION_DESCRIPTION\}\}/g, description || "");
 
+    // Create VS Code settings for Marp theme
+    const vscodeSettings = {
+      "markdown.marp.themes": ["./custom_theme.css"]
+    };
+
     // Write files
-    await fs.writeFile(path.join(fullPath, "themes", "academic_custom.css"), cssTemplate);
+    await fs.writeFile(
+      path.join(fullPath, ".vscode", "settings.json"),
+      JSON.stringify(vscodeSettings, null, 2)
+    );
+    await fs.writeFile(path.join(fullPath, "custom_theme.css"), cssTemplate);
     await fs.writeFile(path.join(fullPath, "slides.md"), slidesTemplate);
     await fs.writeFile(path.join(fullPath, "README.md"), readmeTemplate);
-    await fs.writeFile(path.join(fullPath, ".gitignore"), gitignoreTemplate);
 
     return {
       content: [
@@ -107,14 +91,12 @@ export async function initPresentation({
                 files: [
                   "slides.md",
                   "README.md",
-                  ".gitignore",
-                  "themes/academic_custom.css",
+                  ".vscode/settings.json",
+                  "custom_theme.css",
                 ],
                 directories: [
-                  "themes/",
-                  "attachments/images/",
-                  "attachments/videos/",
-                  "attachments/data/",
+                  ".vscode/",
+                  "attachments/",
                 ],
               },
             },

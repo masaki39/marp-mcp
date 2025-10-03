@@ -1,7 +1,7 @@
 {
   "name": "@masaki39/marp-mcp",
-  "version": "0.1.0",
-  "description": "MCP server for Marp presentation management with academic theme support",
+  "version": "0.2.0",
+  "description": "MCP server for Marp presentation management with custom theme support",
   "main": "./build/index.js",
   "type": "module",
   "bin": {

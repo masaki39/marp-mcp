@@ -1,5 +1,6 @@
-/* @theme academic */
-/* Author: kaisugi https://github.com/kaisugi/ */
+/* @theme custom_theme */
+/* Based on marp-theme-academic by kaisugi https://github.com/kaisugi/ */
+/* Modified by masaki39 https://github.com/masaki39/ */
 /* MIT license https://github.com/kaisugi/marp-theme-academic/blob/main/LICENSE */
 
 @import 'gaia';
@@ -102,17 +103,17 @@ code {
 /*academicに追記*/
 
 /* タイトルクラス */
-section.title {
+section.section {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-section.title h1 {
+section.section h1 {
   text-align: center;
 }
 
-section.title h2 {
+section.section h2 {
   text-align: center;
 }
 

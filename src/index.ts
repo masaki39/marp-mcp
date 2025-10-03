@@ -12,10 +12,10 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 // Import tools
 import { initPresentationSchema, initPresentation } from "./tools/init.js";
 import {
-  generateSlideSchema,
-  generateSlide,
   listSlideLayoutsSchema,
   listSlideLayouts,
+  manageSlideSchema,
+  manageSlide,
 } from "./tools/generate.js";
 
 // Create server instance
@@ -37,17 +37,17 @@ server.tool(
 );
 
 server.tool(
-  "generate_slide",
-  "Generate a slide using academic theme layouts (returns markdown string for copy-paste)",
-  generateSlideSchema.shape,
-  generateSlide
-);
-
-server.tool(
   "list_slide_layouts",
   "List all available slide layouts with their parameters and descriptions",
   listSlideLayoutsSchema.shape,
   listSlideLayouts
+);
+
+server.tool(
+  "manage_slide",
+  "Manage slides in a Marp presentation file (insert, replace, or delete slides)",
+  manageSlideSchema.shape,
+  manageSlide
 );
 
 // Start the server
@@ -56,7 +56,7 @@ async function main() {
   await server.connect(transport);
   console.error("Marp MCP Server v2.0 running on stdio");
   console.error("Optimized for Claude Code and Cursor");
-  console.error("Tools: init_presentation, generate_slide, list_slide_layouts");
+  console.error("Tools: init_presentation, manage_slide, list_slide_layouts");
 }
 
 main().catch((error) => {
