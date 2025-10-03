@@ -1,0 +1,160 @@
+/* @theme academic */
+/* Author: kaisugi https://github.com/kaisugi/ */
+/* MIT license https://github.com/kaisugi/marp-theme-academic/blob/main/LICENSE */
+
+@import 'gaia';
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+
+:root {
+  --color-background: #fff;
+  --color-foreground: #333;
+  --color-highlight: #800000;
+}
+
+section {
+  background-image: none;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding-top: 90px;
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+/* https://github.com/marp-team/marpit/issues/271 */
+section::after {
+  font-weight: 700;
+  content: attr(data-marpit-pagination) '/' attr(data-marpit-pagination-total);
+}
+
+ul ul {
+  font-size: 0.9em;
+}
+
+section.lead h1 {
+  color: #800000;
+  text-align: left;
+}
+section.lead h1 strong {
+  -webkit-text-stroke: 1px #800000;
+}
+section.lead h2 {
+  color: #800000;
+  text-align: left;
+}
+section.lead h2 strong {
+  -webkit-text-stroke: 1px #800000;
+}
+section.lead h3 {
+  color: #800000;
+  text-align: left;
+}
+section.lead h3 strong {
+  -webkit-text-stroke: 1px #800000;
+}
+section.lead h4 {
+  color: #800000;
+  text-align: left;
+}
+section.lead h4 strong {
+  -webkit-text-stroke: 1px #800000;
+}
+section.lead h5 {
+  color: #800000;
+  text-align: left;
+}
+section.lead h5 strong {
+  -webkit-text-stroke: 1px #800000;
+}
+section.lead p {
+  text-align: right;
+}
+
+header {
+  background-color: #800000;
+  color: #fff;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+section > blockquote:not(:has(blockquote)) {
+  max-width: 90%;
+  border-top: 0.1em dashed #555;
+  font-size: 60%;
+  position: absolute;
+  bottom: 20px;
+}
+blockquote::before {
+  content: "";
+}
+blockquote::after {
+  content: "";
+}
+
+img[alt~="center"] {
+  display: block;
+  margin: 0 auto;
+}
+
+code {
+  font-family: 'Source Code Pro', monospace;
+}
+
+/*academicに追記*/
+
+/* タイトルクラス */
+section.title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+section.title h1 {
+  text-align: center;
+}
+
+section.title h2 {
+  text-align: center;
+}
+
+/* tableクラス */
+section.table-100 table {
+  width: 100%;
+  text-align: center;
+}
+
+section.table-center table {
+  margin: 0 auto;
+  margin-top: 15px;
+}
+
+section.table-tiny table {
+  font-size: 0.7em;
+}
+
+section.table-small table {
+  font-size: 0.8em;
+}
+
+section.table-large table {
+  font-size: 1.1em;
+}
+
+/* 二重ブロッククオート記法でのマルチコラム設定 */
+section blockquote:has(blockquote) {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* blockquoteのみをflexアイテムに（安全な方法） */
+section blockquote > blockquote {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+}
+
+/* 内側blockquoteの中身を通常のブロック表示に */
+section blockquote > blockquote * {
+  display: revert; /* 元の表示方式に戻す */
+}

@@ -1,0 +1,20 @@
+# Marp build outputs
+*.pdf
+*.html
+*.pptx
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.log
