@@ -1,10 +1,11 @@
 /**
- * Tools for managing Marp slides
+ * Tool: manage_slide
+ * Manage slides in a Marp presentation file (insert, replace, delete)
  */
 
 import { z } from "zod";
 import { promises as fs } from "fs";
-import { getLayout, getLayoutNames } from "../layouts/index.js";
+import { getLayout, getLayoutNames } from "./list_layouts.js";
 
 interface ToolResponse {
   [x: string]: unknown;
@@ -14,37 +15,6 @@ interface ToolResponse {
   }>;
 }
 
-/**
- * Tool: list_slide_layouts
- * List all available slide layouts with their parameters
- */
-export const listSlideLayoutsSchema = z.object({});
-
-export async function listSlideLayouts(): Promise<ToolResponse> {
-  const { getAllLayoutsInfo } = await import("../layouts/index.js");
-  const layoutsInfo = getAllLayoutsInfo();
-
-  return {
-    content: [
-      {
-        type: "text",
-        text: JSON.stringify(
-          {
-            theme: "academic",
-            layouts: layoutsInfo,
-          },
-          null,
-          2
-        ),
-      },
-    ],
-  };
-}
-
-/**
- * Tool: manage_slide
- * Manage slides in a Marp presentation file (insert, replace, delete)
- */
 export const manageSlideSchema = z.object({
   filePath: z.string().describe("Absolute path to the Marp markdown file"),
   layoutType: z.string().optional().describe("Layout type to use (title, lead, content, table, multi-column, quote). Not required for delete mode."),
