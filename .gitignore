@@ -21,9 +21,11 @@ Thumbs.db
 *.swo
 *~
 
+# Claude Code settings
+.claude/
+
 # Test files
-test-presentation/
-examples/
+test/slides.md
 
 # npm
 *.tgz
