@@ -12,6 +12,7 @@ export interface SlideLayout {
       description: string;
       required: boolean;
       maxLength?: number;
+      maxItems?: number;
     };
   };
   template: (params: any) => string;

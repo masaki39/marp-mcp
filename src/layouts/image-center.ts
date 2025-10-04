@@ -1,12 +1,12 @@
 /**
- * Table slide layout with various size/alignment options
+ * Image layout - centered image display
  */
 
 import type { SlideLayout } from "./types.js";
 
-export const tableLayout: SlideLayout = {
-  name: "table",
-  description: "Table slide with fixed center-tiny layout",
+export const imageLayout: SlideLayout = {
+  name: "image-center",
+  description: "Slide with centered image (fixed h:350)",
   params: {
     heading: {
       type: "string",
@@ -14,14 +14,14 @@ export const tableLayout: SlideLayout = {
       required: true,
       maxLength: 40,
     },
-    tableMarkdown: {
+    imagePath: {
       type: "string",
-      description: "Table in markdown format (max 7 rows excluding header, total ~40 chars/~23 Japanese chars across columns recommended)",
+      description: "Image file path (local paths supported, e.g., ./attachments/image.png)",
       required: true,
     },
     description: {
       type: "string",
-      description: "Table description below table (max 55 chars, ~33 chars for Japanese, no line break)",
+      description: "Image description below image (max 55 chars, ~33 chars for Japanese)",
       required: false,
       maxLength: 55,
     },
@@ -34,19 +34,18 @@ export const tableLayout: SlideLayout = {
   },
   template: (params) => {
     let slide = "";
+
     if (params.heading) {
       slide += `## ${params.heading}\n\n`;
     }
 
-    slide += params.tableMarkdown;
+    // Fixed image directive: center h:350
+    slide += `![center h:350](${params.imagePath})`;
 
-    // Table description (optional)
+    // Image description (optional)
     if (params.description) {
       slide += `\n\n${params.description}`;
     }
-
-    // Fixed table class
-    slide += `\n\n<!-- _class: table-center table-tiny -->`;
 
     // Citation (single, no line break)
     if (params.citations) {

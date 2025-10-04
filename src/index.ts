@@ -32,14 +32,14 @@ const server = new McpServer({
 // Register tools
 server.tool(
   "list_layouts",
-  "List all available slide layouts with their parameters and descriptions",
+  "ALWAYS read this first before creating Marp slides - lists all available layouts with parameters and descriptions",
   listLayoutsSchema.shape,
   listLayouts
 );
 
 server.tool(
   "manage_slide",
-  "Manage slides in a Marp markdown file (insert, replace, or delete slides)",
+  "Create slides using this tool with appropriate layouts, then fine-tune by direct editing if needed",
   manageSlideSchema.shape,
   manageSlide
 );

@@ -21,11 +21,6 @@ export const titleLayout: SlideLayout = {
       required: false,
       maxLength: 500,
     },
-    citations: {
-      type: "array",
-      description: "Citations/references (array of strings)",
-      required: false,
-    },
   },
   template: (params) => {
     let slide = `# ${params.heading}\n`;
@@ -33,14 +28,6 @@ export const titleLayout: SlideLayout = {
       slide += `\n${params.content}\n`;
     }
     slide += `\n<!-- _class: lead -->`;
-
-    // Add citations
-    if (params.citations && params.citations.length > 0) {
-      slide += '\n\n';
-      params.citations.forEach((citation: string) => {
-        slide += `> ${citation}\n`;
-      });
-    }
 
     return slide;
   },

@@ -11,15 +11,15 @@ export const sectionLayout: SlideLayout = {
   params: {
     title: {
       type: "string",
-      description: "Section title (max 60 chars for optimal display)",
+      description: "Section title (max 30 chars, ~18 chars for Japanese)",
       required: true,
-      maxLength: 60,
+      maxLength: 30,
     },
     subtitle: {
       type: "string",
-      description: "Section subtitle (max 100 chars)",
+      description: "Section subtitle (max 40 chars, ~22 chars for Japanese)",
       required: false,
-      maxLength: 100,
+      maxLength: 40,
     },
   },
   template: (params) => {

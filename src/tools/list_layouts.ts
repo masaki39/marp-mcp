@@ -6,11 +6,11 @@ import { z } from "zod";
 import type { SlideLayout } from "../layouts/types.js";
 import { sectionLayout } from "../layouts/section.js";
 import { titleLayout } from "../layouts/title.js";
-import { contentLayout } from "../layouts/content.js";
+import { listLayout } from "../layouts/list.js";
 import { tableLayout } from "../layouts/table.js";
-import { multiColumnLayout } from "../layouts/multi-column.js";
-import { figureLayout } from "../layouts/figure.js";
-import { imageLayout } from "../layouts/image.js";
+import { twoColumnLayout } from "../layouts/two-column.js";
+import { imageRightLayout } from "../layouts/image-right.js";
+import { imageLayout } from "../layouts/image-center.js";
 
 interface ToolResponse {
   [x: string]: unknown;
@@ -26,11 +26,11 @@ interface ToolResponse {
 export const layouts = {
   section: sectionLayout,
   title: titleLayout,
-  content: contentLayout,
+  list: listLayout,
   table: tableLayout,
-  "multi-column": multiColumnLayout,
-  figure: figureLayout,
-  image: imageLayout,
+  "two-column": twoColumnLayout,
+  "image-right": imageRightLayout,
+  "image-center": imageLayout,
 } as const;
 
 /**
