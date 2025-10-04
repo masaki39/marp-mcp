@@ -23,6 +23,7 @@ Thumbs.db
 
 # Claude Code settings
 .claude/
+.mcp.json
 
 # Test files
 test/slides.md

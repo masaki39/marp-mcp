@@ -101,19 +101,19 @@ code {
 
 /*academicに追記*/
 
-/* タイトルクラス */
+/* section class */
 
-section.title {
+section.section {
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-section.title h1 {
+section.section h1 {
   text-align: center;
 }
 
-section.title h2 {
+section.section h2 {
     text-align: center;
 }
 

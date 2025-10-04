@@ -21,8 +21,39 @@ export const manageSlideSchema = z.object({
   params: z.record(z.any()).optional().describe("Parameters for the layout template. Not required for delete mode."),
   mode: z.enum(["insert", "replace", "delete"]).optional().describe("Operation mode: insert (default), replace, or delete"),
   position: z.enum(["end", "start", "after", "before"]).optional().describe("Position for insertion: end (default), start, after, before"),
-  slideNumber: z.number().optional().describe("Slide number for 'after', 'before' position, 'replace' mode, or 'delete' mode (1-indexed)"),
+  slideNumber: z.number().optional().describe("Slide number for 'after', 'before' position, 'replace' mode, or 'delete' mode (1-indexed, excluding frontmatter)"),
 });
+
+/**
+ * Ensures the file has valid frontmatter, adding minimal frontmatter if missing
+ */
+function ensureFrontmatter(content: string): string {
+  const lines = content.split('\n');
+  if (lines.length === 0 || lines[0].trim() !== '---') {
+    // No frontmatter, add minimal one
+    return `---\nmarp: true\n---\n\n${content}`;
+  }
+  return content;
+}
+
+/**
+ * Joins slides back together, trimming all slides and filtering empty ones
+ */
+function joinSlides(slides: string[]): string {
+  if (slides.length === 0) return '';
+
+  // Trim all slides and filter out empty ones (except frontmatter at index 0)
+  const processedSlides = slides
+    .map((s, i) => {
+      const trimmed = s.trim();
+      // Keep frontmatter (index 0) even if empty, but filter out other empty slides
+      if (i === 0) return trimmed;
+      return trimmed || null;
+    })
+    .filter((s, i) => s !== null && s !== '' || i === 0) as string[];
+
+  return processedSlides.join('\n\n---\n\n');
+}
 
 export async function manageSlide({
   filePath,
@@ -45,6 +76,17 @@ export async function manageSlide({
       };
     }
 
+    if (slideNumber < 1) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error: Invalid slideNumber ${slideNumber}. Slide numbers start from 1 (frontmatter is not counted)`,
+          },
+        ],
+      };
+    }
+
     try {
       let existingContent: string;
 
@@ -61,32 +103,26 @@ export async function manageSlide({
         };
       }
 
+      // Ensure frontmatter exists
+      existingContent = ensureFrontmatter(existingContent);
+
       const slides = existingContent.split(/\n---\n/);
+      const actualSlideCount = slides.length - 1; // Exclude frontmatter
 
-      if (slideNumber < 1 || slideNumber > slides.length) {
+      if (slideNumber > actualSlideCount) {
         return {
           content: [
             {
               type: "text",
-              text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${slides.length}`,
+              text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${actualSlideCount}`,
             },
           ],
         };
       }
 
-      if (slideNumber === 1) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error: Cannot delete slide 1 (frontmatter). Please use slideNumber >= 2`,
-            },
-          ],
-        };
-      }
-
-      slides.splice(slideNumber - 1, 1);
-      const newContent = slides.join("\n---\n");
+      // Convert slideNumber to array index (slideNumber 1 = index 1)
+      slides.splice(slideNumber, 1);
+      const newContent = joinSlides(slides);
       await fs.writeFile(filePath, newContent, "utf-8");
 
       return {
@@ -97,7 +133,7 @@ export async function manageSlide({
               {
                 success: true,
                 operation: `Deleted slide ${slideNumber}`,
-                totalSlides: slides.length,
+                totalSlides: slides.length - 1, // Exclude frontmatter from count
                 file: filePath,
               },
               null,
@@ -236,26 +272,31 @@ export async function manageSlide({
       };
     }
 
+    // Ensure frontmatter exists
+    existingContent = ensureFrontmatter(existingContent);
+
     // Split slides by separator
     const slides = existingContent.split(/\n---\n/);
+    const actualSlideCount = slides.length - 1; // Exclude frontmatter
 
     let newContent: string;
     let operation: string;
 
     if (mode === "replace") {
-      if (!slideNumber || slideNumber < 1 || slideNumber > slides.length) {
+      if (!slideNumber || slideNumber < 1 || slideNumber > actualSlideCount) {
         return {
           content: [
             {
               type: "text",
-              text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${slides.length}`,
+              text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${actualSlideCount}`,
             },
           ],
         };
       }
 
-      slides[slideNumber - 1] = slideContent;
-      newContent = slides.join("\n---\n");
+      // Convert slideNumber to array index (slideNumber 1 = index 1)
+      slides[slideNumber] = slideContent;
+      newContent = joinSlides(slides);
       operation = `Replaced slide ${slideNumber}`;
     } else {
       // Insert mode
@@ -266,35 +307,37 @@ export async function manageSlide({
       } else if (position === "end") {
         insertIndex = slides.length;
       } else if (position === "after") {
-        if (!slideNumber || slideNumber < 1 || slideNumber > slides.length) {
+        if (!slideNumber || slideNumber < 1 || slideNumber > actualSlideCount) {
           return {
             content: [
               {
                 type: "text",
-                text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${slides.length}`,
+                text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${actualSlideCount}`,
               },
             ],
           };
         }
-        insertIndex = slideNumber;
+        // Insert after slideNumber (slideNumber 1 = index 1, so insert at index 2)
+        insertIndex = slideNumber + 1;
       } else if (position === "before") {
-        if (!slideNumber || slideNumber < 1 || slideNumber > slides.length) {
+        if (!slideNumber || slideNumber < 1 || slideNumber > actualSlideCount) {
           return {
             content: [
               {
                 type: "text",
-                text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${slides.length}`,
+                text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${actualSlideCount}`,
               },
             ],
           };
         }
-        insertIndex = slideNumber - 1;
+        // Insert before slideNumber (slideNumber 1 = index 1, so insert at index 1)
+        insertIndex = slideNumber;
       } else {
         insertIndex = slides.length;
       }
 
       slides.splice(insertIndex, 0, slideContent);
-      newContent = slides.join("\n---\n");
+      newContent = joinSlides(slides);
       operation = `Inserted slide at position ${insertIndex} (${position})`;
     }
 
@@ -310,7 +353,7 @@ export async function manageSlide({
               success: true,
               operation,
               layoutType,
-              totalSlides: slides.length,
+              totalSlides: slides.length - 1, // Exclude frontmatter from count
               file: filePath,
             },
             null,
