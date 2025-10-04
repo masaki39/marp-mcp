@@ -1,6 +1,7 @@
 # Marp MCP Server
 
 An MCP server for creating and editing Marp presentations with AI assistance.
+This MCP server allows LLMs to edit Markdown files according to a specified layout, optimized for the [custom CSS](./assets/academic_custom.css) in this repository.
 
 ## Setup
 
@@ -38,7 +39,7 @@ Add to your MCP client configuration:
 
 ## Example
 
-See the [example presentation](./assets/example.html) demonstrating all available layouts.
+See the [example presentation](https://filedn.com/lF97wFVWosQpHEoDAbvva0h/slides/%E2%96%B6%EF%B8%8F2025-10-04_marp-mcp-example.html) demonstrating all available layouts.
 
 The example was created entirely using this MCP server and showcases:
 - Title and section slides
