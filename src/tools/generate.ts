@@ -6,8 +6,15 @@
 import { z } from "zod";
 import { promises as fs } from "fs";
 import path from "path";
-import type { ToolResponse } from "../types.js";
 import { getLayout, getLayoutNames } from "../layouts/index.js";
+
+interface ToolResponse {
+  [x: string]: unknown;
+  content: Array<{
+    type: "text";
+    text: string;
+  }>;
+}
 
 export const generateSlideSchema = z.object({
   layoutType: z.string().describe("Layout type to use (title, lead, content, table, multi-column, quote)"),

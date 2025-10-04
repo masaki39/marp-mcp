@@ -6,11 +6,16 @@
 import { z } from "zod";
 import { promises as fs } from "fs";
 import path from "path";
-import type { ToolResponse } from "../types.js";
-
-// Import templates as strings
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+
+interface ToolResponse {
+  [x: string]: unknown;
+  content: Array<{
+    type: "text";
+    text: string;
+  }>;
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
