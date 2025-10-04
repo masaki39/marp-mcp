@@ -25,34 +25,58 @@ export const manageSlideSchema = z.object({
 });
 
 /**
- * Ensures the file has valid frontmatter, adding minimal frontmatter if missing
+ * Parses frontmatter from content, separating it from the body
+ * If no frontmatter exists, returns default frontmatter
  */
-function ensureFrontmatter(content: string): string {
+function parseFrontmatter(content: string): { frontmatter: string; body: string } {
   const lines = content.split('\n');
+
+  // No frontmatter case
   if (lines.length === 0 || lines[0].trim() !== '---') {
-    // No frontmatter, add minimal one
-    return `---\nmarp: true\n---\n\n${content}`;
+    return {
+      frontmatter: '---\nmarp: true\n---',
+      body: content.trim()
+    };
   }
-  return content;
+
+  // Find closing ---
+  const endIndex = lines.slice(1).findIndex(line => line.trim() === '---');
+  if (endIndex === -1) {
+    // No closing ---, treat entire content as body
+    return {
+      frontmatter: '---\nmarp: true\n---',
+      body: content.trim()
+    };
+  }
+
+  const frontmatterLines = lines.slice(0, endIndex + 2); // From opening --- to closing ---
+  const bodyLines = lines.slice(endIndex + 2);
+
+  return {
+    frontmatter: frontmatterLines.join('\n'),
+    body: bodyLines.join('\n').trim()
+  };
 }
 
 /**
- * Joins slides back together, trimming all slides and filtering empty ones
+ * Joins frontmatter and slides together
  */
-function joinSlides(slides: string[]): string {
-  if (slides.length === 0) return '';
+function joinSlides(frontmatter: string, slides: string[]): string {
+  if (slides.length === 0) {
+    return frontmatter;
+  }
 
-  // Trim all slides and filter out empty ones (except frontmatter at index 0)
+  // Trim all slides and filter out empty ones
   const processedSlides = slides
-    .map((s, i) => {
-      const trimmed = s.trim();
-      // Keep frontmatter (index 0) even if empty, but filter out other empty slides
-      if (i === 0) return trimmed;
-      return trimmed || null;
-    })
-    .filter((s, i) => s !== null && s !== '' || i === 0) as string[];
+    .map(s => s.trim())
+    .filter(s => s !== '');
 
-  return processedSlides.join('\n\n---\n\n');
+  if (processedSlides.length === 0) {
+    return frontmatter;
+  }
+
+  // Frontmatter + 2 newlines + slides joined by separator
+  return frontmatter + '\n\n' + processedSlides.join('\n\n---\n\n');
 }
 
 export async function manageSlide({
@@ -103,11 +127,11 @@ export async function manageSlide({
         };
       }
 
-      // Ensure frontmatter exists
-      existingContent = ensureFrontmatter(existingContent);
+      // Parse frontmatter and body
+      const { frontmatter, body } = parseFrontmatter(existingContent);
 
-      const slides = existingContent.split(/\n---\n/);
-      const actualSlideCount = slides.length - 1; // Exclude frontmatter
+      const slides = body ? body.split(/\n---\n/) : [];
+      const actualSlideCount = slides.length;
 
       if (slideNumber > actualSlideCount) {
         return {
@@ -120,9 +144,9 @@ export async function manageSlide({
         };
       }
 
-      // Convert slideNumber to array index (slideNumber 1 = index 1)
-      slides.splice(slideNumber, 1);
-      const newContent = joinSlides(slides);
+      // Convert slideNumber to array index (slideNumber 1 = index 0)
+      slides.splice(slideNumber - 1, 1);
+      const newContent = joinSlides(frontmatter, slides);
       await fs.writeFile(filePath, newContent, "utf-8");
 
       return {
@@ -133,7 +157,7 @@ export async function manageSlide({
               {
                 success: true,
                 operation: `Deleted slide ${slideNumber}`,
-                totalSlides: slides.length - 1, // Exclude frontmatter from count
+                totalSlides: slides.length,
                 file: filePath,
               },
               null,
@@ -272,12 +296,11 @@ export async function manageSlide({
       };
     }
 
-    // Ensure frontmatter exists
-    existingContent = ensureFrontmatter(existingContent);
+    // Parse frontmatter and body
+    const { frontmatter, body } = parseFrontmatter(existingContent);
 
-    // Split slides by separator
-    const slides = existingContent.split(/\n---\n/);
-    const actualSlideCount = slides.length - 1; // Exclude frontmatter
+    const slides = body ? body.split(/\n---\n/) : [];
+    const actualSlideCount = slides.length;
 
     let newContent: string;
     let operation: string;
@@ -294,16 +317,16 @@ export async function manageSlide({
         };
       }
 
-      // Convert slideNumber to array index (slideNumber 1 = index 1)
-      slides[slideNumber] = slideContent;
-      newContent = joinSlides(slides);
+      // Convert slideNumber to array index (slideNumber 1 = index 0)
+      slides[slideNumber - 1] = slideContent;
+      newContent = joinSlides(frontmatter, slides);
       operation = `Replaced slide ${slideNumber}`;
     } else {
       // Insert mode
       let insertIndex: number;
 
       if (position === "start") {
-        insertIndex = 1; // After frontmatter
+        insertIndex = 0;
       } else if (position === "end") {
         insertIndex = slides.length;
       } else if (position === "after") {
@@ -317,8 +340,8 @@ export async function manageSlide({
             ],
           };
         }
-        // Insert after slideNumber (slideNumber 1 = index 1, so insert at index 2)
-        insertIndex = slideNumber + 1;
+        // Insert after slideNumber (slideNumber 1 = index 0, so insert at index 1)
+        insertIndex = slideNumber;
       } else if (position === "before") {
         if (!slideNumber || slideNumber < 1 || slideNumber > actualSlideCount) {
           return {
@@ -330,15 +353,15 @@ export async function manageSlide({
             ],
           };
         }
-        // Insert before slideNumber (slideNumber 1 = index 1, so insert at index 1)
-        insertIndex = slideNumber;
+        // Insert before slideNumber (slideNumber 1 = index 0, so insert at index 0)
+        insertIndex = slideNumber - 1;
       } else {
         insertIndex = slides.length;
       }
 
       slides.splice(insertIndex, 0, slideContent);
-      newContent = joinSlides(slides);
-      operation = `Inserted slide at position ${insertIndex} (${position})`;
+      newContent = joinSlides(frontmatter, slides);
+      operation = `Inserted slide at position ${insertIndex + 1} (${position})`;
     }
 
     // Write updated content
@@ -353,7 +376,7 @@ export async function manageSlide({
               success: true,
               operation,
               layoutType,
-              totalSlides: slides.length - 1, // Exclude frontmatter from count
+              totalSlides: slides.length,
               file: filePath,
             },
             null,

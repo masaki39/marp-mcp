@@ -1,203 +1,60 @@
 # Marp MCP Server
 
-MarpプレゼンテーションをAIで簡単に作成・編集できるMCPサーバーです。Claude Code、Cursor、Clineなどのツールで使用できます。
+An MCP server for creating and editing Marp presentations with AI assistance.
 
-## 特徴
+## Setup
 
-- 🎨 **カスタムテーマ対応** - 学術的なデザインのテーマを内蔵
-- 📝 **7種類のレイアウト** - タイトル、セクション、コンテンツ、テーブル、画像など
-- 🔧 **AI統合** - Claude CodeなどのMCP対応ツールで自然言語で操作
-- 🖥️ **VS Code対応** - Marp for VS Code拡張機能で即座にプレビュー
+Add to your MCP client configuration:
 
-## インストール
-
-### npx経由（推奨）
-
-```bash
-npx @masaki39/marp-mcp
+```json
+{
+  "mcpServers": {
+    "marp-mcp": {
+      "command": "npx",
+      "args": ["-y", "@masaki39/marp-mcp"]
+    }
+  }
+}
 ```
 
-### グローバルインストール
+## Tools
 
-```bash
-npm install -g @masaki39/marp-mcp
-```
+| Tool | Description |
+|------|-------------|
+| `list_layouts` | List all available slide layouts with parameters and descriptions |
+| `manage_slide` | Insert, replace, or delete slides in a Marp markdown file |
 
-## セットアップ
+## Available Layouts
 
-### Claude Code（CLI）で使う
+| Layout | Description |
+|--------|-------------|
+| `title` | Title slide with left-aligned heading and metadata |
+| `section` | Section divider with centered title and subtitle |
+| `list` | Content slide with heading and bullet points or text |
+| `table` | Table layout with customizable size and alignment |
+| `two-column` | Two-column layout for side-by-side content |
+| `image-right` | Layout with image on the right side |
+| `image-center` | Centered image layout with adjustable dimensions |
 
-プロジェクトまたはユーザースコープに追加:
+## Example
 
-```bash
-# プロジェクトスコープ（.mcp.jsonに保存、共有可能）
-claude mcp add marp npx -y @masaki39/marp-mcp
+See the [example presentation](./assets/example.html) demonstrating all available layouts.
 
-# ユーザースコープ（全プロジェクトで利用可能）
-claude mcp add --scope user marp npx -y @masaki39/marp-mcp
-```
+The example was created entirely using this MCP server and showcases:
+- Title and section slides
+- List and table layouts
+- Two-column layout
+- Image layouts (center and right)
 
-### VS Codeでプレビュー
+Source: [example.md](./assets/example.md)
 
-1. [Marp for VS Code](https://marketplace.visualstudio.com/items?itemName=marp-team.marp-vscode)拡張機能をインストール
-2. プロジェクトフォルダを開く
-3. `slides.md`を開いてプレビューボタンをクリック
-
-## 使い方
-
-### 1. プロジェクトの作成
-
-AIに以下のように依頼:
-
-```
-"カレントディレクトリに'研究発表2024'というタイトルのプレゼンを作成して"
-```
-
-生成されるファイル構成:
-
-```
-current-directory/
-├── slides.md              # メインファイル
-├── custom_theme.css       # テーマ
-├── .vscode/settings.json  # VS Code設定
-├── attachments/           # 画像・データ
-└── README.md
-```
-
-### 2. スライドの追加・編集
-
-AIに自然言語で依頼:
-
-```
-"2枚目のスライドの後に、見出し'研究方法'の内容スライドを追加して"
-```
-
-```
-"3枚目のスライドを削除して"
-```
-
-```
-"右側に画像を表示するスライドを作成して"
-```
-
-### 3. PDFやHTMLに出力
-
-Marp CLIをインストール:
-
-```bash
-npm install -g @marp-team/marp-cli
-```
-
-ビルド:
-
-```bash
-# PDF出力
-marp slides.md -o slides.pdf
-
-# HTML出力
-marp slides.md -o slides.html
-
-# PowerPoint出力
-marp slides.md -o slides.pptx
-```
-
-## 利用可能なレイアウト
-
-### section（セクション区切り）
-- 中央揃えのタイトルとサブタイトル
-- プレゼンの章立てに使用
-
-### title（タイトルスライド）
-- 左揃えのタイトル
-- 発表者情報などを記載
-
-### content（標準コンテンツ）
-- 見出し（h2）とテキスト
-- 最も頻繁に使用
-
-### table（テーブル）
-- 表形式のデータ表示
-- サイズと配置を調整可能
-
-### multi-column（マルチカラム）
-- 2〜3カラムレイアウト
-- 比較スライドなどに便利
-
-### figure（背景画像付き）
-- 背景に画像を配置
-- 左右の配置とサイズを指定可能
-
-### image（中央画像）
-- 画像を中央に配置
-- 高さと幅を調整可能
-
-## ツール一覧
-
-### init_presentation
-新規プレゼンテーションを初期化
-
-### manage_slide
-スライドの挿入・置換・削除
-
-### list_slide_layouts
-利用可能なレイアウト一覧を表示
-
-## テーマのカスタマイズ
-
-`custom_theme.css`を編集して独自のデザインに変更できます:
-
-- カラースキーム変更
-- フォント変更
-- レイアウト調整
-
-## トラブルシューティング
-
-### テンプレートが見つからない
-
-ビルドを実行:
-
-```bash
-npm run build
-ls build/templates/
-```
-
-以下のファイルがあることを確認:
-- `custom_theme.css`
-- `slides.template.md`
-- `README.template.md`
-
-## 開発
-
-### ソースからビルド
-
-```bash
-git clone https://github.com/masaki39/marp-mcp.git
-cd marp-mcp
-npm install
-npm run build
-```
-
-### ローカルテスト
-
-```bash
-npm link
-```
-
-その後、MCPクライアントでローカル版を使用するよう設定。
-
-## ライセンス
+## License
 
 MIT License
 
-## クレジット
-
-- テーマベース: [marp-theme-academic](https://github.com/kaisugi/marp-theme-academic) by kaisugi
-- プロトコル: [Model Context Protocol](https://modelcontextprotocol.io)
-- エンジン: [Marp](https://marp.app/)
-
-## リンク
+## Links
 
 - [GitHub](https://github.com/masaki39/marp-mcp)
 - [npm](https://www.npmjs.com/package/@masaki39/marp-mcp)
-- [Marp公式](https://marpit.marp.app/)
-- [MCP公式](https://modelcontextprotocol.io)
+- [Marp](https://marp.app/)
+- [Model Context Protocol](https://modelcontextprotocol.io)

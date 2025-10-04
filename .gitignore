@@ -25,9 +25,6 @@ Thumbs.db
 .claude/
 .mcp.json
 
-# Test files
-test/slides.md
-
 # npm
 *.tgz
 package-lock.json
