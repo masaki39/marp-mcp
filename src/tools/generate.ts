@@ -1,11 +1,9 @@
 /**
- * Tool: generate_slide and manage_slide
- * Generate a slide using academic theme layouts
+ * Tools for managing Marp slides
  */
 
 import { z } from "zod";
 import { promises as fs } from "fs";
-import path from "path";
 import { getLayout, getLayoutNames } from "../layouts/index.js";
 
 interface ToolResponse {
@@ -14,123 +12,6 @@ interface ToolResponse {
     type: "text";
     text: string;
   }>;
-}
-
-export const generateSlideSchema = z.object({
-  layoutType: z.string().describe("Layout type to use (title, lead, content, table, multi-column, quote)"),
-  params: z.record(z.any()).describe("Parameters for the layout template"),
-});
-
-export async function generateSlide({
-  layoutType,
-  params,
-}: z.infer<typeof generateSlideSchema>): Promise<ToolResponse> {
-  const layout = getLayout(layoutType);
-
-  if (!layout) {
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error: Unknown layout type "${layoutType}". Available layouts: ${getLayoutNames().join(", ")}`,
-        },
-      ],
-    };
-  }
-
-  // Validate required parameters
-  const missingParams: string[] = [];
-  for (const [paramName, paramDef] of Object.entries(layout.params)) {
-    if (paramDef.required && !params[paramName]) {
-      missingParams.push(paramName);
-    }
-  }
-
-  if (missingParams.length > 0) {
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error: Missing required parameters: ${missingParams.join(", ")}`,
-        },
-      ],
-    };
-  }
-
-  // Validate parameter types and lengths
-  for (const [paramName, value] of Object.entries(params)) {
-    const paramDef = layout.params[paramName];
-    if (!paramDef) continue;
-
-    // Check type for string parameters
-    if (paramDef.type === "string" && typeof value !== "string") {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error: Parameter "${paramName}" must be a string`,
-          },
-        ],
-      };
-    }
-
-    // Check type for array parameters
-    if (paramDef.type === "array" && !Array.isArray(value)) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error: Parameter "${paramName}" must be an array`,
-          },
-        ],
-      };
-    }
-
-    // Check max length for string parameters
-    if (paramDef.type === "string" && paramDef.maxLength && typeof value === "string") {
-      if (value.length > paramDef.maxLength) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error: Parameter "${paramName}" exceeds maximum length of ${paramDef.maxLength} characters (current: ${value.length})`,
-            },
-          ],
-        };
-      }
-    }
-  }
-
-  // Generate slide content
-  try {
-    const slideContent = layout.template(params);
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(
-            {
-              success: true,
-              layoutType,
-              markdown: slideContent,
-            },
-            null,
-            2
-          ),
-        },
-      ],
-    };
-  } catch (error) {
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error generating slide: ${error instanceof Error ? error.message : String(error)}`,
-        },
-      ],
-    };
-  }
 }
 
 /**
@@ -165,7 +46,7 @@ export async function listSlideLayouts(): Promise<ToolResponse> {
  * Manage slides in a Marp presentation file (insert, replace, delete)
  */
 export const manageSlideSchema = z.object({
-  projectPath: z.string().describe("Path to the Marp project directory"),
+  filePath: z.string().describe("Absolute path to the Marp markdown file"),
   layoutType: z.string().optional().describe("Layout type to use (title, lead, content, table, multi-column, quote). Not required for delete mode."),
   params: z.record(z.any()).optional().describe("Parameters for the layout template. Not required for delete mode."),
   mode: z.enum(["insert", "replace", "delete"]).optional().describe("Operation mode: insert (default), replace, or delete"),
@@ -174,7 +55,7 @@ export const manageSlideSchema = z.object({
 });
 
 export async function manageSlide({
-  projectPath,
+  filePath,
   layoutType,
   params,
   mode = "insert",
@@ -195,17 +76,16 @@ export async function manageSlide({
     }
 
     try {
-      const slidesPath = path.resolve(projectPath, "slides.md");
       let existingContent: string;
 
       try {
-        existingContent = await fs.readFile(slidesPath, "utf-8");
+        existingContent = await fs.readFile(filePath, "utf-8");
       } catch (error) {
         return {
           content: [
             {
               type: "text",
-              text: `Error: Could not read slides.md at ${slidesPath}. Make sure the project exists.`,
+              text: `Error: Could not read file at ${filePath}`,
             },
           ],
         };
@@ -237,7 +117,7 @@ export async function manageSlide({
 
       slides.splice(slideNumber - 1, 1);
       const newContent = slides.join("\n---\n");
-      await fs.writeFile(slidesPath, newContent, "utf-8");
+      await fs.writeFile(filePath, newContent, "utf-8");
 
       return {
         content: [
@@ -248,7 +128,7 @@ export async function manageSlide({
                 success: true,
                 operation: `Deleted slide ${slideNumber}`,
                 totalSlides: slides.length,
-                file: slidesPath,
+                file: filePath,
               },
               null,
               2
@@ -370,18 +250,17 @@ export async function manageSlide({
   // Generate slide content
   try {
     const slideContent = layout.template(params);
-    const slidesPath = path.resolve(projectPath, "slides.md");
 
-    // Read existing slides.md
+    // Read existing file
     let existingContent: string;
     try {
-      existingContent = await fs.readFile(slidesPath, "utf-8");
+      existingContent = await fs.readFile(filePath, "utf-8");
     } catch (error) {
       return {
         content: [
           {
             type: "text",
-            text: `Error: Could not read slides.md at ${slidesPath}. Make sure the project exists.`,
+            text: `Error: Could not read file at ${filePath}`,
           },
         ],
       };
@@ -450,7 +329,7 @@ export async function manageSlide({
     }
 
     // Write updated content
-    await fs.writeFile(slidesPath, newContent, "utf-8");
+    await fs.writeFile(filePath, newContent, "utf-8");
 
     return {
       content: [
@@ -462,7 +341,7 @@ export async function manageSlide({
               operation,
               layoutType,
               totalSlides: slides.length,
-              file: slidesPath,
+              file: filePath,
             },
             null,
             2
