@@ -1,11 +1,12 @@
 /**
  * Tool: manage_slide
- * Manage slides in a Marp presentation file (insert, replace, delete)
+ * Manage slides in a Marp presentation file (insert, replace, delete) using slide IDs
  */
 
 import { z } from "zod";
 import { promises as fs } from "fs";
 import { getLayout, getLayoutNames } from "./list_layouts.js";
+import { ensureSlideId, findSlideIndexById, generateSlideId } from "../utils/slide-id.js";
 
 interface ToolResponse {
   [x: string]: unknown;
@@ -21,7 +22,7 @@ export const manageSlideSchema = z.object({
   params: z.record(z.any()).optional().describe("Parameters for the layout template. Not required for delete mode."),
   mode: z.enum(["insert", "replace", "delete"]).optional().describe("Operation mode: insert (default), replace, or delete"),
   position: z.enum(["end", "start", "after", "before"]).optional().describe("Position for insertion: end (default), start, after, before"),
-  slideNumber: z.number().optional().describe("Slide number for 'after', 'before' position, 'replace' mode, or 'delete' mode (1-indexed, excluding frontmatter)"),
+  slideId: z.string().optional().describe("Slide ID for 'after', 'before' position, 'replace' mode, or 'delete' mode"),
 });
 
 /**
@@ -79,33 +80,29 @@ function joinSlides(frontmatter: string, slides: string[]): string {
   return frontmatter + '\n\n' + processedSlides.join('\n\n---\n\n');
 }
 
+/**
+ * Ensures all slides in the array have IDs
+ */
+function ensureAllSlidesHaveIds(slides: string[]): string[] {
+  return slides.map(slide => ensureSlideId(slide).content);
+}
+
 export async function manageSlide({
   filePath,
   layoutType,
   params,
   mode = "insert",
   position = "end",
-  slideNumber,
+  slideId,
 }: z.infer<typeof manageSlideSchema>): Promise<ToolResponse> {
   // Handle delete mode separately
   if (mode === "delete") {
-    if (!slideNumber) {
+    if (!slideId) {
       return {
         content: [
           {
             type: "text",
-            text: `Error: slideNumber is required for delete mode`,
-          },
-        ],
-      };
-    }
-
-    if (slideNumber < 1) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error: Invalid slideNumber ${slideNumber}. Slide numbers start from 1 (frontmatter is not counted)`,
+            text: `Error: slideId is required for delete mode`,
           },
         ],
       };
@@ -130,22 +127,26 @@ export async function manageSlide({
       // Parse frontmatter and body
       const { frontmatter, body } = parseFrontmatter(existingContent);
 
-      const slides = body ? body.split(/\n---\n/) : [];
-      const actualSlideCount = slides.length;
+      let slides = body ? body.split(/\n---\n/) : [];
 
-      if (slideNumber > actualSlideCount) {
+      // Ensure all slides have IDs
+      slides = ensureAllSlidesHaveIds(slides);
+
+      const slideIndex = findSlideIndexById(slides, slideId);
+
+      if (slideIndex === -1) {
         return {
           content: [
             {
               type: "text",
-              text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${actualSlideCount}`,
+              text: `Error: Slide with ID "${slideId}" not found`,
             },
           ],
         };
       }
 
-      // Convert slideNumber to array index (slideNumber 1 = index 0)
-      slides.splice(slideNumber - 1, 1);
+      // Remove the slide
+      slides.splice(slideIndex, 1);
       const newContent = joinSlides(frontmatter, slides);
       await fs.writeFile(filePath, newContent, "utf-8");
 
@@ -156,7 +157,7 @@ export async function manageSlide({
             text: JSON.stringify(
               {
                 success: true,
-                operation: `Deleted slide ${slideNumber}`,
+                operation: `Deleted slide with ID ${slideId}`,
                 totalSlides: slides.length,
                 file: filePath,
               },
@@ -265,13 +266,13 @@ export async function manageSlide({
     }
   }
 
-  // Validate slideNumber for operations that require it
-  if ((position === "after" || position === "before" || mode === "replace") && !slideNumber) {
+  // Validate slideId for operations that require it
+  if ((position === "after" || position === "before" || mode === "replace") && !slideId) {
     return {
       content: [
         {
           type: "text",
-          text: `Error: slideNumber is required for position "${position}" or mode "${mode}"`,
+          text: `Error: slideId is required for position "${position}" or mode "${mode}"`,
         },
       ],
     };
@@ -299,30 +300,51 @@ export async function manageSlide({
     // Parse frontmatter and body
     const { frontmatter, body } = parseFrontmatter(existingContent);
 
-    const slides = body ? body.split(/\n---\n/) : [];
-    const actualSlideCount = slides.length;
+    let slides = body ? body.split(/\n---\n/) : [];
+
+    // Ensure all slides have IDs
+    slides = ensureAllSlidesHaveIds(slides);
 
     let newContent: string;
     let operation: string;
+    let resultSlideId: string;
 
     if (mode === "replace") {
-      if (!slideNumber || slideNumber < 1 || slideNumber > actualSlideCount) {
+      if (!slideId) {
         return {
           content: [
             {
               type: "text",
-              text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${actualSlideCount}`,
+              text: `Error: slideId is required for replace mode`,
             },
           ],
         };
       }
 
-      // Convert slideNumber to array index (slideNumber 1 = index 0)
-      slides[slideNumber - 1] = slideContent;
+      const slideIndex = findSlideIndexById(slides, slideId);
+
+      if (slideIndex === -1) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: Slide with ID "${slideId}" not found`,
+            },
+          ],
+        };
+      }
+
+      // Keep the same ID for replaced slide
+      const slideWithId = `<!-- slide-id: ${slideId} -->\n\n${slideContent}`;
+      slides[slideIndex] = slideWithId;
       newContent = joinSlides(frontmatter, slides);
-      operation = `Replaced slide ${slideNumber}`;
+      operation = `Replaced slide with ID ${slideId}`;
+      resultSlideId = slideId;
     } else {
-      // Insert mode
+      // Insert mode - generate new ID
+      const newSlideId = generateSlideId();
+      const slideWithId = `<!-- slide-id: ${newSlideId} -->\n\n${slideContent}`;
+
       let insertIndex: number;
 
       if (position === "start") {
@@ -330,38 +352,63 @@ export async function manageSlide({
       } else if (position === "end") {
         insertIndex = slides.length;
       } else if (position === "after") {
-        if (!slideNumber || slideNumber < 1 || slideNumber > actualSlideCount) {
+        if (!slideId) {
           return {
             content: [
               {
                 type: "text",
-                text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${actualSlideCount}`,
+                text: `Error: slideId is required for position "after"`,
               },
             ],
           };
         }
-        // Insert after slideNumber (slideNumber 1 = index 0, so insert at index 1)
-        insertIndex = slideNumber;
+
+        const refIndex = findSlideIndexById(slides, slideId);
+        if (refIndex === -1) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: Slide with ID "${slideId}" not found`,
+              },
+            ],
+          };
+        }
+
+        insertIndex = refIndex + 1;
       } else if (position === "before") {
-        if (!slideNumber || slideNumber < 1 || slideNumber > actualSlideCount) {
+        if (!slideId) {
           return {
             content: [
               {
                 type: "text",
-                text: `Error: Invalid slideNumber ${slideNumber}. Must be between 1 and ${actualSlideCount}`,
+                text: `Error: slideId is required for position "before"`,
               },
             ],
           };
         }
-        // Insert before slideNumber (slideNumber 1 = index 0, so insert at index 0)
-        insertIndex = slideNumber - 1;
+
+        const refIndex = findSlideIndexById(slides, slideId);
+        if (refIndex === -1) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: Slide with ID "${slideId}" not found`,
+              },
+            ],
+          };
+        }
+
+        insertIndex = refIndex;
       } else {
         insertIndex = slides.length;
       }
 
-      slides.splice(insertIndex, 0, slideContent);
+      slides.splice(insertIndex, 0, slideWithId);
       newContent = joinSlides(frontmatter, slides);
       operation = `Inserted slide at position ${insertIndex + 1} (${position})`;
+      resultSlideId = newSlideId;
     }
 
     // Write updated content
@@ -375,6 +422,7 @@ export async function manageSlide({
             {
               success: true,
               operation,
+              slideId: resultSlideId,
               layoutType,
               totalSlides: slides.length,
               file: filePath,

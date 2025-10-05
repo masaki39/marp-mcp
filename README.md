@@ -23,7 +23,8 @@ Add to your MCP client configuration:
 | Tool | Description |
 |------|-------------|
 | `list_layouts` | List all available slide layouts with parameters and descriptions |
-| `manage_slide` | Insert, replace, or delete slides in a Marp markdown file |
+| `generate_slide_ids` | Automatically generates unique IDs for all slides in a Marp file |
+| `manage_slide` | Insert, replace, or delete slides using slide IDs (ID-based operations) |
 
 ## Available Layouts
 

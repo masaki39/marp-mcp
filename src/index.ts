@@ -18,11 +18,15 @@ import {
   manageSlideSchema,
   manageSlide,
 } from "./tools/manage_slide.js";
+import {
+  generateSlideIdsSchema,
+  generateSlideIds,
+} from "./tools/generate_slide_ids.js";
 
 // Create server instance
 const server = new McpServer({
   name: "marp-mcp",
-  version: "0.3.0",
+  version: "0.4.0",
   capabilities: {
     resources: {},
     tools: {},
@@ -38,6 +42,13 @@ server.tool(
 );
 
 server.tool(
+  "generate_slide_ids",
+  "Automatically generates and assigns unique IDs to all slides in a Marp file that don't have IDs yet",
+  generateSlideIdsSchema.shape,
+  generateSlideIds
+);
+
+server.tool(
   "manage_slide",
   "Create slides using this tool with appropriate layouts, then fine-tune by direct editing if needed",
   manageSlideSchema.shape,
@@ -48,8 +59,8 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Marp MCP Server v0.3.0 running on stdio");
-  console.error("Tools: list_layouts, manage_slide");
+  console.error("Marp MCP Server v0.4.0 running on stdio");
+  console.error("Tools: list_layouts, generate_slide_ids, manage_slide");
 }
 
 main().catch((error) => {
