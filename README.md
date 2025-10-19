@@ -1,5 +1,7 @@
 # Marp MCP Server
 
+![NPM Downloads](https://img.shields.io/npm/dm/%40masaki39%2Fmarp-mcp)
+
 An MCP server for creating and editing Marp presentations with AI assistance.
 This MCP server allows LLMs to edit Markdown files according to a specified layout, optimized for the [custom CSS](./assets/academic_custom.css) in this repository.
 
