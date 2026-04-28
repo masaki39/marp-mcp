@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/masaki39-marp-mcp-badge.png)](https://mseep.ai/app/masaki39-marp-mcp)
+
 # Marp MCP Server
 
 ![NPM Downloads](https://img.shields.io/npm/dt/%40masaki39%2Fmarp-mcp)
