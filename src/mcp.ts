@@ -5,8 +5,11 @@
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { createServer, IncomingMessage, ServerResponse } from "http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { getActiveTheme } from "./themes/index.js";
 import { getActiveStyle } from "./styles/index.js";
 import { info } from "./utils/logger.js";
@@ -50,10 +53,7 @@ const packageJson = JSON.parse(
   readFileSync(join(__dirname, "../package.json"), "utf-8")
 ) as { version: string };
 
-/**
- * Starts the MCP server on stdio transport.
- */
-export async function startMcpServer(): Promise<void> {
+function buildMcpServer(version: string): McpServer {
   const server = new McpServer(
     {
       name: "marp-mcp",
@@ -140,6 +140,16 @@ export async function startMcpServer(): Promise<void> {
     createPresentation
   );
 
+  return server;
+}
+
+const _tools = ["list_themes_and_styles", "list_layouts", "generate_slide_ids", "manage_slide", "set_frontmatter", "read_slide", "export_slide", "create_presentation"];
+
+/**
+ * Starts the MCP server on stdio transport.
+ */
+export async function startMcpServer(): Promise<void> {
+  const server = buildMcpServer(packageJson.version);
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
@@ -147,6 +157,63 @@ export async function startMcpServer(): Promise<void> {
     theme: getActiveTheme().name,
     style: getActiveStyle().name,
     version: packageJson.version,
-    tools: ["list_themes_and_styles", "list_layouts", "generate_slide_ids", "manage_slide", "set_frontmatter", "read_slide", "export_slide", "create_presentation"],
+    tools: _tools,
+  });
+}
+
+/**
+ * Starts the MCP server on streamable HTTP transport.
+ * Each request gets its own transport instance (stateless sessions).
+ */
+export async function startMcpHttpServer(port: number): Promise<void> {
+  const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    if (req.method === "GET" && req.url === "/health") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "ok", version: packageJson.version }));
+      return;
+    }
+
+    if (req.url !== "/mcp") {
+      res.writeHead(404);
+      res.end("Not found");
+      return;
+    }
+
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined, // stateless
+    });
+
+    res.on("close", () => {
+      transport.close().catch(() => {});
+    });
+
+    const server = buildMcpServer(packageJson.version);
+    await server.connect(transport);
+    await transport.handleRequest(req, res, await readBody(req));
+  });
+
+  httpServer.listen(port, () => {
+    info("Marp MCP Server running on HTTP", {
+      port,
+      endpoint: `http://0.0.0.0:${port}/mcp`,
+      health: `http://0.0.0.0:${port}/health`,
+      theme: getActiveTheme().name,
+      style: getActiveStyle().name,
+      version: packageJson.version,
+      tools: _tools,
+    });
+  });
+}
+
+function readBody(req: IncomingMessage): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on("data", (chunk: Buffer) => chunks.push(chunk));
+    req.on("end", () => {
+      const raw = Buffer.concat(chunks).toString("utf-8");
+      if (!raw) { resolve(undefined); return; }
+      try { resolve(JSON.parse(raw)); } catch { resolve(undefined); }
+    });
+    req.on("error", reject);
   });
 }
