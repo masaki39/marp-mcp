@@ -3,9 +3,14 @@ marp: true
 theme: default
 header: Example Labs | default theme, academic style
 paginate: true
+transition: fade
 style: |
   
   /* ===== Academic Style for Marp ===== */
+  
+  section {
+    font-size: 0.95em;
+  }
   
   /* --- Page Number --- */
   section::after {
@@ -219,11 +224,15 @@ style: |
   /* --- Academic Methodology --- */
   .acad-method-steps {
     display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .acad-method-row {
+    display: flex;
     align-items: stretch;
     justify-content: center;
     gap: 0;
-    margin-top: 1rem;
-    flex-wrap: nowrap;
   }
   .acad-method-step {
     background: #f8f9fa;
@@ -410,6 +419,29 @@ style: |
     margin-top: 0.5rem;
   }
   
+  section.img-fullscreen {
+    padding: 0;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  section.img-fullscreen img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  img[alt~="img-morph-1"] { view-transition-name: img-morph-1; }
+  img[alt~="img-morph-2"] { view-transition-name: img-morph-2; }
+  img[alt~="img-morph-3"] { view-transition-name: img-morph-3; }
+  img[title~="step"] {
+    height: 1em;
+    position: relative;
+    top: -0.1em;
+    vertical-align: middle;
+    width: 1em;
+  }
+  img[alt="1"] { view-transition-name: step-1; }
 ---
 
 <!-- layout: title -->
@@ -419,8 +451,16 @@ style: |
 
 ---
 
+## Agenda
+
+- ![1](https://icongr.am/material/numeric-1-circle.svg?color=666666 'step') Part Two
+
+---
+
 <!-- layout: section -->
 <!-- _class: acad-section -->
+
+![1 w:192 h:192](https://icongr.am/material/numeric-1-circle.svg?color=ffffff 'step')
 
 ## Part Two
 
@@ -492,6 +532,15 @@ Higher is better.
 
 ---
 
+<!-- _class: img-fullscreen -->
+<!-- _paginate: false -->
+<!-- _header: "" -->
+<!-- _footer: "" -->
+
+![img-morph-1](https://picsum.photos/1280/720)
+
+---
+
 <!-- layout: image-right -->
 ## Architecture Diagram
 
@@ -505,11 +554,20 @@ Higher is better.
 
 </div>
 
-![](https://picsum.photos/1280/720)
+![img-morph-1](https://picsum.photos/1280/720)
 
 </div>
 
 > Diagram credit: picsum.photos
+
+---
+
+<!-- _class: img-fullscreen -->
+<!-- _paginate: false -->
+<!-- _header: "" -->
+<!-- _footer: "" -->
+
+![img-morph-2](https://picsum.photos/1280/720)
 
 ---
 
@@ -518,11 +576,20 @@ Higher is better.
 
 ## Workflow Snapshot
 
-![center h:430](https://picsum.photos/1280/720)
+![img-morph-2 center h:430](https://picsum.photos/1280/720)
 
 Step-by-step overview.
 
 > Figure 1
+
+---
+
+<!-- _class: img-fullscreen -->
+<!-- _paginate: false -->
+<!-- _header: "" -->
+<!-- _footer: "" -->
+
+![img-morph-3](https://picsum.photos/1280/720)
 
 ---
 
@@ -531,7 +598,7 @@ Step-by-step overview.
 
 <div class="acad-figure">
 
-![center h:380](https://picsum.photos/1280/720)
+![img-morph-3 center h:380](https://picsum.photos/1280/720)
 
 <div class="acad-figure-caption"><strong>Fig. 1.</strong> Comparison of treatment groups over 12-week period (Adapted from Smith et al., 2024)</div>
 </div>
@@ -556,6 +623,7 @@ Step-by-step overview.
 ## Study Design
 
 <div class="acad-method-steps">
+<div class="acad-method-row">
 <div class="acad-method-step">
 <div class="acad-method-step-label" style="font-size: 0.9em">Recruitment</div>
 <div class="acad-method-step-desc" style="font-size: 0.75em">N=120 participants</div>
@@ -570,7 +638,8 @@ Step-by-step overview.
 <div class="acad-method-step-label" style="font-size: 0.9em">Intervention</div>
 <div class="acad-method-step-desc" style="font-size: 0.75em">12-week protocol</div>
 </div>
-<div class="acad-method-arrow">→</div>
+</div>
+<div class="acad-method-row">
 <div class="acad-method-step">
 <div class="acad-method-step-label" style="font-size: 0.9em">Assessment</div>
 <div class="acad-method-step-desc" style="font-size: 0.75em">Pre/post measures</div>
@@ -579,6 +648,7 @@ Step-by-step overview.
 <div class="acad-method-step">
 <div class="acad-method-step-label" style="font-size: 0.9em">Analysis</div>
 <div class="acad-method-step-desc" style="font-size: 0.75em">Mixed-effects model</div>
+</div>
 </div>
 </div>
 

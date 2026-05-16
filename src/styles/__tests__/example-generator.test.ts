@@ -344,6 +344,67 @@ describe("style example generator", () => {
   }, 30000);
 });
 
+// Layouts that contain an image eligible for morphing transitions
+const IMAGE_LAYOUTS = new Set(["image-center", "figure-caption", "image-right"]);
+
+const ICON_BASE = "https://icongr.am/material/numeric-{N}-circle.svg";
+
+const IMG_FULLSCREEN_CSS = `section.img-fullscreen {
+  padding: 0;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+section.img-fullscreen img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}`;
+
+function addMorphNameToAlt(slideContent: string, morphName: string): string {
+  // Prepend morph name to alt of the first non-bg image in the slide.
+  // Marp preserves non-keyword alt text as the HTML alt attribute,
+  // so img[alt~="name"] works for both inline and bg images.
+  return slideContent.replace(
+    /!\[(?!bg\s)([^\]]*)\]\(([^)'"]+)\)/,
+    (_, alt, url) => {
+      const newAlt = alt.trim() ? `${morphName} ${alt.trim()}` : morphName;
+      return `![${newAlt}](${url})`;
+    },
+  );
+}
+
+function buildMorphCss(morphNames: string[]): string {
+  return morphNames
+    .map((name) => `img[alt~="${name}"] { view-transition-name: ${name}; }`)
+    .join("\n");
+}
+
+function buildStepCssInline(count: number): string {
+  const rules = Array.from({ length: count }, (_, i) => {
+    const n = i + 1;
+    return `img[alt="${n}"] { view-transition-name: step-${n}; }`;
+  }).join("\n");
+  return `img[title~="step"] {\n  height: 1em;\n  position: relative;\n  top: -0.1em;\n  vertical-align: middle;\n  width: 1em;\n}\n${rules}`;
+}
+
+function extractHeading(slideContent: string): string {
+  const m = slideContent.match(/^#{1,3}\s+(.+)/m);
+  return m ? m[1].trim() : "Section";
+}
+
+function addSectionIconInline(slideContent: string, n: number): string {
+  if (slideContent.includes("'step'") || slideContent.includes('"step"')) return slideContent;
+  const url = `${ICON_BASE.replace("{N}", String(n))}?color=ffffff`;
+  const icon = `![${n} w:192 h:192](${url} 'step')`;
+  const lines = slideContent.split("\n");
+  const hi = lines.findIndex((l) => /^#{1,3}\s/.test(l));
+  if (hi === -1) return `${slideContent.trim()}\n\n${icon}`;
+  lines.splice(hi, 0, icon, "");
+  return lines.join("\n");
+}
+
 function buildExampleMarkdown(
   styleName: StyleName,
   layouts: Record<string, { template: (params: Record<string, unknown>) => string }>,
@@ -357,7 +418,10 @@ function buildExampleMarkdown(
     throw new Error(`Style "${styleName}" not found`);
   }
 
-  const slides = layoutNames.map((layoutName) => {
+  const morphNames: string[] = [];
+  const slides: string[] = [];
+
+  for (const layoutName of layoutNames) {
     const layout = layouts[layoutName];
     if (!layout) {
       throw new Error(`Layout "${layoutName}" not found in style "${styleName}"`);
@@ -371,8 +435,54 @@ function buildExampleMarkdown(
     }
 
     const content = layout.template(params);
-    return `<!-- layout: ${layoutName} -->\n${content.trim()}`;
-  });
+    let slideContent = `<!-- layout: ${layoutName} -->\n${content.trim()}`;
+
+    if (IMAGE_LAYOUTS.has(layoutName)) {
+      const morphName = `img-morph-${morphNames.length + 1}`;
+      morphNames.push(morphName);
+      const taggedContent = addMorphNameToAlt(slideContent, morphName);
+      // Full-screen slide: uses img-fullscreen class with inline img so
+      // view-transition-name applies to a real DOM element (not a CSS background).
+      const bgSlide = `<!-- _class: img-fullscreen -->\n<!-- _paginate: false -->\n<!-- _header: "" -->\n<!-- _footer: "" -->\n\n![${morphName}](${SAMPLE_IMAGE})`;
+      slides.push(bgSlide);
+      slides.push(taggedContent);
+    } else {
+      slides.push(slideContent);
+    }
+  }
+
+  // For academic style: add agenda + section icons
+  const sectionIndices: number[] = [];
+  if (styleName === "academic") {
+    for (let i = 0; i < slides.length; i++) {
+      if (slides[i].includes("_class: acad-section")) {
+        sectionIndices.push(i);
+      }
+    }
+
+    if (sectionIndices.length > 0) {
+      // Add icons to section slides (modify in-place)
+      sectionIndices.forEach((idx, i) => {
+        slides[idx] = addSectionIconInline(slides[idx], i + 1);
+      });
+
+      // Build agenda slide
+      const agendaItems = sectionIndices
+        .map((idx, i) => {
+          const n = i + 1;
+          const url = `${ICON_BASE.replace("{N}", String(n))}?color=666666`;
+          return `- ![${n}](${url} 'step') ${extractHeading(slides[idx])}`;
+        })
+        .join("\n");
+      const agendaSlide = `## Agenda\n\n${agendaItems}`;
+
+      // Insert agenda before first section slide
+      slides.splice(sectionIndices[0], 0, agendaSlide);
+    }
+  }
+
+  const hasMorphing = morphNames.length > 0;
+  const hasAgenda = sectionIndices.length > 0;
 
   const frontmatterLines = [
     "---",
@@ -382,9 +492,24 @@ function buildExampleMarkdown(
     "paginate: true",
   ];
 
-  if (style.css) {
+  if (hasMorphing || hasAgenda) {
+    frontmatterLines.push("transition: fade");
+  }
+
+  let fullCss = style.css;
+  {
+    const extras: string[] = [];
+    if (hasMorphing) {
+      extras.push(IMG_FULLSCREEN_CSS);
+      extras.push(buildMorphCss(morphNames));
+    }
+    if (hasAgenda) extras.push(buildStepCssInline(sectionIndices.length));
+    if (extras.length > 0) fullCss = `${style.css}\n${extras.join("\n")}`;
+  }
+
+  if (fullCss) {
     frontmatterLines.push(`style: |`);
-    for (const line of style.css.split("\n")) {
+    for (const line of fullCss.split("\n")) {
       frontmatterLines.push(`  ${line}`);
     }
   }

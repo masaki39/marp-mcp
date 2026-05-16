@@ -6,6 +6,10 @@
 export const academicCss = `
 /* ===== Academic Style for Marp ===== */
 
+section {
+  font-size: 0.95em;
+}
+
 /* --- Page Number --- */
 section::after {
   font-size: 0.6em;
@@ -218,11 +222,15 @@ section.acad-img-center {
 /* --- Academic Methodology --- */
 .acad-method-steps {
   display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.acad-method-row {
+  display: flex;
   align-items: stretch;
   justify-content: center;
   gap: 0;
-  margin-top: 1rem;
-  flex-wrap: nowrap;
 }
 .acad-method-step {
   background: #f8f9fa;

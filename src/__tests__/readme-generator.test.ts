@@ -74,7 +74,7 @@ function buildReadme(): string {
 > \`\`\`
 
 An MCP server for creating and editing Marp presentations with AI assistance.
-This MCP server allows LLMs to edit Markdown files according to a specified layout, and now supports the default Marp theme along with Gaia, Uncover, and the [Academic](./assets/themes/academic.css) in this repository.
+This MCP server allows LLMs to edit Markdown files according to a specified layout, supporting the built-in Marp themes (default, Gaia, Uncover) and a rich set of academic and professional presentation styles.
 
 ## ⚙️ Setup
 
@@ -120,14 +120,14 @@ claude mcp add --scope project marp-mcp -- npx -y @masaki39/marp-mcp@latest
 
 ### Setting server default theme/style
 
-Use \`-t\` / \`--theme\` and \`-s\` / \`--style\` args to set the server-wide default. Choose from themes: \`default\`, \`gaia\`, \`uncover\`, \`academic\`. Styles: \`default\`, \`${styleList}\`:
+Use \`-t\` / \`--theme\` and \`-s\` / \`--style\` args to set the server-wide default. Choose from themes: \`default\`, \`gaia\`, \`uncover\`. Styles: \`default\`, \`${styleList}\`:
 
 \`\`\`json
 {
   "mcpServers": {
     "marp-mcp": {
       "command": "npx",
-      "args": ["-y", "@masaki39/marp-mcp@latest", "-t", "default", "-s", "academic"]
+      "args": ["-y", "@masaki39/marp-mcp@latest", "-t", "default", "-s", "rich"]
     }
   }
 }
@@ -147,6 +147,8 @@ Omitting these flags defaults to \`default\` theme and \`default\` style.
 | \`read_slide\` | Read slide content by ID or list all slides with their IDs and positions |
 | \`generate_slide_ids\` | Generate stable UUIDs for every slide (safe to re-run) |
 | \`export_slide\` | Export to HTML, PDF, or PPTX using marp-cli |
+| \`generate_agenda\` | Auto-generate an agenda slide; adds numbered icons to section slides for view-transition morphing (HTML only) |
+| \`add_image_transition\` | Insert a full-screen background image slide before a target slide and tag images for view-transition morphing (HTML only) |
 
 ### Per-call theme/style override
 
@@ -181,6 +183,27 @@ ${defaultThemeRows}
 ### Styles
 
 ${styleLayoutSections}
+
+## 💡 Tips
+
+### Adjusting font size
+
+Add an inline style to any slide to override the font size for the whole presentation:
+
+\`\`\`html
+<style>section { font-size: 1em; }</style>
+\`\`\`
+
+The \`academic\` style sets \`font-size: 0.95em\` by default.
+
+### Image morphing transitions (HTML only)
+
+Use \`generate_agenda\` and \`add_image_transition\` to enable CSS View Transition morphing effects:
+
+- \`generate_agenda\` — scans section slides, inserts an agenda with numbered icons, and adds matching icons to each section slide so the icon morphs between agenda and section views.
+- \`add_image_transition\` — inserts a full-screen background slide before an image slide and tags both with matching \`view-transition-name\` so the image appears to zoom in as you advance.
+
+Both require HTML export (\`export_slide\` with \`format: "html"\`) to render transitions.
 
 ## 🔧 Development
 

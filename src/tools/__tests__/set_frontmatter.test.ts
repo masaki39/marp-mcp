@@ -70,7 +70,7 @@ describe("setFrontmatter", () => {
       "# Slide",
     ].join("\n");
     await fs.writeFile(filePath, original, "utf-8");
-    setActiveTheme("academic");
+    setActiveTheme("gaia");
 
     await setFrontmatter({
       filePath,
@@ -82,7 +82,7 @@ describe("setFrontmatter", () => {
     // Check that the header contains the value (gray-matter may use single or double quotes)
     expect(updated).toMatch(/header:\s*['"]Kickoff: FY25['"]/);
     expect(updated).toContain("paginate: true");
-    expect(updated).toContain("theme: academic");
+    expect(updated).toContain("theme: gaia");
   });
 
   it("injects style CSS when rich style is active", async () => {

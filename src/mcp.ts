@@ -43,6 +43,14 @@ import {
   listThemesAndStylesSchema,
   listThemesAndStyles,
 } from "./tools/list_themes_and_styles.js";
+import {
+  generateAgendaSchema,
+  generateAgenda,
+} from "./tools/generate_agenda.js";
+import {
+  addImageTransitionSchema,
+  addImageTransition,
+} from "./tools/add_image_transition.js";
 
 // Load version from package.json
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -140,6 +148,26 @@ export async function startMcpServer(): Promise<void> {
     createPresentation
   );
 
+  server.tool(
+    "generate_agenda",
+    "Auto-generate an agenda slide from section slides (detected by CSS class) and insert it before the first section. " +
+      "Also injects view-transition CSS and transition: fade into frontmatter. " +
+      "NOTE: View transitions are only visible in HTML export (export_slide with format='html'). " +
+      "Section slides must have <!-- _class: acad-section --> (or custom sectionClass) before calling this tool.",
+    generateAgendaSchema.shape,
+    generateAgenda
+  );
+
+  server.tool(
+    "add_image_transition",
+    "Insert a full-screen background image slide immediately before the specified slide to create a zoom-in transition effect. " +
+      "Header, footer, and page number are hidden on the inserted background slide. " +
+      "NOTE: View transitions are only visible in HTML export (export_slide with format='html'). " +
+      "Use read_slide to get the target slide's ID, then pass it as slideId.",
+    addImageTransitionSchema.shape,
+    addImageTransition
+  );
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
@@ -147,6 +175,6 @@ export async function startMcpServer(): Promise<void> {
     theme: getActiveTheme().name,
     style: getActiveStyle().name,
     version: packageJson.version,
-    tools: ["list_themes_and_styles", "list_layouts", "generate_slide_ids", "manage_slide", "set_frontmatter", "read_slide", "export_slide", "create_presentation"],
+    tools: ["list_themes_and_styles", "list_layouts", "generate_slide_ids", "manage_slide", "set_frontmatter", "read_slide", "export_slide", "create_presentation", "generate_agenda", "add_image_transition"],
   });
 }

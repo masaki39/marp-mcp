@@ -65,7 +65,7 @@ export const manageSlideSchema = z.object({
     .string()
     .optional()
     .describe(
-      "Theme name to use for this call (e.g. 'gaia', 'uncover', 'academic'). " +
+      "Theme name to use for this call (e.g. 'gaia', 'uncover'). " +
         "Overrides server default for this call only. Omit to use server default."
     ),
   style: z

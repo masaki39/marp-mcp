@@ -3,6 +3,7 @@ marp: true
 theme: default
 header: Example Labs | default theme, dark style
 paginate: true
+transition: fade
 style: |
   
   /* ===== Dark Style for Marp ===== */
@@ -609,6 +610,20 @@ style: |
     margin-bottom: 0.25rem;
   }
   
+  section.img-fullscreen {
+    padding: 0;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  section.img-fullscreen img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  img[alt~="img-morph-1"] { view-transition-name: img-morph-1; }
+  img[alt~="img-morph-2"] { view-transition-name: img-morph-2; }
 ---
 
 <!-- layout: title -->
@@ -744,6 +759,15 @@ Higher is better.
 
 ---
 
+<!-- _class: img-fullscreen -->
+<!-- _paginate: false -->
+<!-- _header: "" -->
+<!-- _footer: "" -->
+
+![img-morph-1](https://picsum.photos/1280/720)
+
+---
+
 <!-- layout: image-right -->
 ## Architecture Diagram
 
@@ -757,7 +781,7 @@ Higher is better.
 
 </div>
 
-![](https://picsum.photos/1280/720)
+![img-morph-1](https://picsum.photos/1280/720)
 
 </div>
 
@@ -791,6 +815,15 @@ A guiding principle for innovation.
 
 ---
 
+<!-- _class: img-fullscreen -->
+<!-- _paginate: false -->
+<!-- _header: "" -->
+<!-- _footer: "" -->
+
+![img-morph-2](https://picsum.photos/1280/720)
+
+---
+
 <!-- layout: image-center -->
 <!-- _class: dk-img-center -->
 
@@ -798,7 +831,7 @@ A guiding principle for innovation.
 
 <div class="dk-image-center-wrap">
 
-![h:400](https://picsum.photos/1280/720)
+![img-morph-2 h:400](https://picsum.photos/1280/720)
 
 </div>
 

@@ -99,7 +99,7 @@ Add or update Marp frontmatter fields.
 
 \`\`\`bash
 marp-mcp set-frontmatter slides.md --header "My Presentation" --paginate
-marp-mcp -s academic set-frontmatter slides.md --header "Research Talk"
+marp-mcp -s rich set-frontmatter slides.md --header "Research Talk"
 \`\`\`
 
 Options:
@@ -175,6 +175,31 @@ Options:
 - \`--allow-local-files\` — Allow local image file access in HTML export
 - \`--theme-set <path>\` — Path to a custom theme CSS file
 
+#### \`generate-agenda <file>\`
+
+Auto-generate an agenda slide from section slides. Inserts the agenda before the first section slide and adds view-transition CSS to frontmatter. **HTML export only.**
+
+\`\`\`bash
+marp-mcp generate-agenda slides.md
+marp-mcp generate-agenda slides.md --section-class acad-section --heading "Today's Agenda"
+\`\`\`
+
+Options:
+- \`--section-class <class>\` — CSS class of section slides (default: \`acad-section\`)
+- \`--heading <text>\` — Agenda slide heading (default: \`Agenda\`)
+
+#### \`add-image-transition <file>\`
+
+Insert a full-screen background image slide before a target slide for zoom-in transition effect. **HTML export only.**
+
+\`\`\`bash
+marp-mcp add-image-transition slides.md --slide-id <id> --image-url https://example.com/image.png
+\`\`\`
+
+Options:
+- \`--slide-id <id>\` — Target slide ID (required; use \`read\` to discover IDs)
+- \`--image-url <url>\` — Image URL or path for the background slide (required)
+
 ## Workflow
 
 ### Quick Start (Recommended)
@@ -233,6 +258,41 @@ marp-mcp -t <theme> -s <style> list-layouts
 \`\`\`
 
 \`!\`marp-mcp list-layouts\`\`
+
+## Tips
+
+### Adjusting font size
+
+Add an inline style to any slide to override the font size for the whole presentation:
+
+\`\`\`html
+<style>section { font-size: 1em; }</style>
+\`\`\`
+
+The \`academic\` style sets \`font-size: 0.95em\` by default.
+
+### Image morphing transitions (HTML only)
+
+Use these tools to add CSS View Transition morphing effects:
+
+1. **Agenda morphing** — call \`generate-agenda\` to insert an agenda slide and add numbered icons to section slides. The icon morphs between slides in HTML export.
+
+   \`\`\`bash
+   marp-mcp generate-agenda slides.md
+   \`\`\`
+
+2. **Image morphing** — call \`add-image-transition\` with the target slide ID and image URL. A full-screen image slide is inserted before the target; both share a \`view-transition-name\` so the image morphs (zooms in) when advancing.
+
+   \`\`\`bash
+   marp-mcp read slides.md                        # get slide IDs
+   marp-mcp add-image-transition slides.md --slide-id <id> --image-url https://example.com/img.png
+   \`\`\`
+
+Export as HTML to see transitions:
+
+\`\`\`bash
+marp-mcp export slides.md -f html
+\`\`\`
 
 ## Best Practices
 

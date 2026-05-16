@@ -12,6 +12,8 @@ import { readSlide } from "../tools/read_slide.js";
 import { exportSlide } from "../tools/export_slide.js";
 import { createPresentation } from "../tools/create_presentation.js";
 import { listThemesAndStyles } from "../tools/list_themes_and_styles.js";
+import { generateAgenda } from "../tools/generate_agenda.js";
+import { addImageTransition } from "../tools/add_image_transition.js";
 
 /**
  * Registers all CLI subcommands on the given commander program.
@@ -131,6 +133,34 @@ export function registerCommands(program: Command): void {
         outputPath: opts.output ? resolveFilePath(opts.output) : undefined,
         allowLocalFiles: opts.allowLocalFiles,
         themeSet: opts.themeSet,
+      });
+      outputResult(result);
+    });
+
+  program
+    .command("generate-agenda <file>")
+    .description("Auto-generate an agenda slide from section slides")
+    .option("--section-class <class>", "CSS class of section slides", "acad-section")
+    .option("--heading <text>", "Agenda slide heading", "Agenda")
+    .action(async (file: string, opts: { sectionClass: string; heading: string }) => {
+      const result = await generateAgenda({
+        filePath: resolveFilePath(file),
+        sectionClass: opts.sectionClass,
+        agendaHeading: opts.heading,
+      });
+      outputResult(result);
+    });
+
+  program
+    .command("add-image-transition <file>")
+    .description("Insert a full-screen background image slide before the target slide")
+    .requiredOption("--slide-id <id>", "Target slide ID")
+    .requiredOption("--image-url <url>", "Image URL or path for the background slide")
+    .action(async (file: string, opts: { slideId: string; imageUrl: string }) => {
+      const result = await addImageTransition({
+        filePath: resolveFilePath(file),
+        slideId: opts.slideId,
+        imageUrl: opts.imageUrl,
       });
       outputResult(result);
     });

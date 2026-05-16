@@ -17,21 +17,11 @@ describe("theme manager", () => {
 
   it("exposes all registered themes", () => {
     const names = getAvailableThemeNames();
-    const expectedThemes = ["default", "academic", "gaia", "uncover"];
+    const expectedThemes = ["default", "gaia", "uncover"];
     expect(names).toEqual(expect.arrayContaining(expectedThemes));
     for (const themeName of expectedThemes) {
       expect(getTheme(themeName)).toBeDefined();
     }
-  });
-
-  it("switches layouts based on active theme", async () => {
-    setActiveTheme("academic");
-    const academicLayouts = await getLayoutNamesFromTool();
-    expect(academicLayouts).toContain("two-column");
-
-    setActiveTheme("default");
-    const defaultLayouts = await getLayoutNamesFromTool();
-    expect(defaultLayouts).not.toContain("two-column");
   });
 
   it("adds lead styling support in Gaia title layout", () => {
