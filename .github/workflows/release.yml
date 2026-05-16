@@ -21,20 +21,15 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Read changelog
-        id: changelog
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           FILE="changelog/${{ steps.version.outputs.version }}.md"
           if [ ! -f "$FILE" ]; then
             echo "ERROR: $FILE not found" >&2
             exit 1
           fi
-          { echo 'body<<EOF'; cat "$FILE"; echo 'EOF'; } >> "$GITHUB_OUTPUT"
-
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
           gh release create "${{ steps.version.outputs.tag }}" \
             --title "${{ steps.version.outputs.tag }}" \
-            --notes "${{ steps.changelog.outputs.body }}"
+            --notes-file "$FILE"
