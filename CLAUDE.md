@@ -33,6 +33,12 @@
 
 - `splitSlides()`（`src/utils/frontmatter.ts`）を必ず使う。正規表現を直接書かないこと
 
+## Marp 画像モーフィング（CSS View Transitions）
+
+- `![bg contain](url)` は CSS `background-image` になるため DOM の `<img>` がなく `view-transition-name` が効かない
+- フルスクリーン画像は `<!-- _class: img-fullscreen -->` + inline `![morphName](url)` パターンを使う
+- alt の非キーワード語はそのまま HTML `alt` 属性になる → `img[alt~="name"]` で両スライドをターゲットできる
+
 ## テスト規約
 
 - 一時ディレクトリ: `fs.mkdtemp(path.join(os.tmpdir(), "marp-{prefix}-"))`
@@ -56,3 +62,4 @@
 - テスト: Node 18.x / 20.x / 22.x（pnpm でインストール）
 - examples の HTML は CI で GitHub Pages にデプロイ（`assets/examples/html/` は `.gitignore` 対象）
 - タグ push（`v*`）で GitHub Release を自動作成（`changelog/{version}.md` がリリースノート）
+- changelog は `--notes-file` でそのまま渡す設計のため、内容に制限なし（backtick 等も問題なし）
