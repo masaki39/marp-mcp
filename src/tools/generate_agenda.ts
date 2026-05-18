@@ -171,9 +171,14 @@ export async function generateAgenda({
   return createSuccessResponse({
     message: `Agenda slides generated and inserted before each of ${sectionIndices.length} section(s). Section slides updated with numbered icons for view-transition morphing.`,
     file: filePath,
-    agendaInsertedBeforeSections: sectionIndices,
     sectionsFound: sectionIndices.length,
     sectionTitles,
+    agendaInsertedBeforeSections: sectionIndices,
+    insertDetails: sectionIndices.map((origIdx, i) => ({
+      sectionTitle: sectionTitles[i],
+      originalSectionIndex: origIdx,
+      agendaInsertedAtIndex: origIdx + i,
+    })),
     note: "View transitions (morphing icons) work in HTML export only (export_slide with format='html').",
   });
 }

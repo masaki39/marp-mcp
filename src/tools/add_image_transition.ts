@@ -27,6 +27,12 @@ export const addImageTransitionSchema = z.object({
 const IMG_FULLSCREEN_CSS = `section.img-fullscreen {
   padding: 0;
   background: #111;
+  overflow: hidden;
+}
+section.img-fullscreen > p {
+  position: absolute;
+  inset: 0;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -141,6 +147,7 @@ export async function addImageTransition({
     bgSlideInsertedAt: targetIndex,
     morphName,
     imageTagged: imageFound,
+    warning: "⚠ View transition morphing is HTML export ONLY. Use export_slide with format='html'. PDF/image exports will NOT animate.",
     note: "Image morphing works in HTML export only (export_slide with format='html'). The morph name is placed in the alt text of both slides so Marp renders matching img elements for CSS View Transition morphing.",
   });
 }

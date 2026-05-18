@@ -34,11 +34,11 @@ export const manageSlideSchema = z.object({
         'Example: {"heading": "My Title", "body": "Some content"}. Not required for delete mode.'
     ),
   mode: z
-    .enum(["insert", "replace", "delete"])
+    .enum(["insert", "replace", "delete", "move"])
     .optional()
     .describe(
       "Operation mode: 'insert' (default) adds a new slide, 'replace' overwrites an existing slide keeping its ID, " +
-        "'delete' removes a slide. replace and delete both require slideId."
+        "'delete' removes a slide, 'move' relocates an existing slide. replace, delete, and move all require slideId."
     ),
   position: z
     .enum(["end", "start", "after", "before"])
@@ -52,7 +52,20 @@ export const manageSlideSchema = z.object({
     .optional()
     .describe(
       "Slide ID (the UUID from a '<!-- slide-id: ... -->' comment). Required for: position 'after', " +
-        "position 'before', mode 'replace', mode 'delete'. Use read_slide to discover existing slide IDs."
+        "position 'before', mode 'replace', mode 'delete', mode 'move'. Use read_slide to discover existing slide IDs."
+    ),
+  targetPosition: z
+    .enum(["end", "start", "after", "before"])
+    .optional()
+    .describe(
+      "Move destination (move mode only): 'end' (default) moves to end, 'start' moves to beginning, " +
+        "'after' moves after targetSlideId, 'before' moves before targetSlideId."
+    ),
+  targetSlideId: z
+    .string()
+    .optional()
+    .describe(
+      "Reference slide ID for targetPosition 'after' or 'before' (move mode only). Use read_slide to discover slide IDs."
     ),
   note: z
     .string()
@@ -155,6 +168,8 @@ export async function manageSlide({
   note,
   theme: themeName,
   style: styleName,
+  targetPosition = "end",
+  targetSlideId,
 }: z.infer<typeof manageSlideSchema>): Promise<ToolResponse> {
   // Validate file path
   const pathError = validateFilePath(filePath);
@@ -215,6 +230,75 @@ export async function manageSlide({
     } catch (error) {
       return createErrorResponse(
         `Error deleting slide: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  // Handle move mode separately
+  if (mode === "move") {
+    if (!slideId) {
+      return createErrorResponse(
+        "slideId is required for move mode. Use read_slide to list all slides and their IDs."
+      );
+    }
+
+    try {
+      const result = await readAndParseSlides(filePath);
+      if (!result.ok) return result.response;
+
+      const { frontmatter, slides } = result;
+      const slideIndex = findSlideIndexById(slides, slideId);
+
+      if (slideIndex === -1) {
+        return createErrorResponse(
+          `Slide with ID "${slideId}" not found in ${filePath}. Call read_slide on this file to see all current slide IDs.`
+        );
+      }
+
+      const [movedSlide] = slides.splice(slideIndex, 1);
+
+      let insertIndex: number;
+      if (targetPosition === "start") {
+        insertIndex = 0;
+      } else if (targetPosition === "after") {
+        if (!targetSlideId) {
+          return createErrorResponse('targetSlideId is required for targetPosition "after"');
+        }
+        const refIndex = findSlideIndexById(slides, targetSlideId);
+        if (refIndex === -1) {
+          return createErrorResponse(
+            `Target slide with ID "${targetSlideId}" not found. Call read_slide to see all slide IDs.`
+          );
+        }
+        insertIndex = refIndex + 1;
+      } else if (targetPosition === "before") {
+        if (!targetSlideId) {
+          return createErrorResponse('targetSlideId is required for targetPosition "before"');
+        }
+        const refIndex = findSlideIndexById(slides, targetSlideId);
+        if (refIndex === -1) {
+          return createErrorResponse(
+            `Target slide with ID "${targetSlideId}" not found. Call read_slide to see all slide IDs.`
+          );
+        }
+        insertIndex = refIndex;
+      } else {
+        insertIndex = slides.length;
+      }
+
+      slides.splice(insertIndex, 0, movedSlide);
+      const newContent = joinSlides(frontmatter, slides);
+      await fs.writeFile(filePath, newContent, "utf-8");
+
+      return createSuccessResponse({
+        operation: `Moved slide ${slideId} to position ${insertIndex + 1} (${targetPosition})`,
+        slideId,
+        totalSlides: slides.length,
+        file: filePath,
+      });
+    } catch (error) {
+      return createErrorResponse(
+        `Error moving slide: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }

@@ -14,6 +14,7 @@ import { createPresentation } from "../tools/create_presentation.js";
 import { listThemesAndStyles } from "../tools/list_themes_and_styles.js";
 import { generateAgenda } from "../tools/generate_agenda.js";
 import { addImageTransition } from "../tools/add_image_transition.js";
+import { batchManageSlides } from "../tools/batch_manage_slides.js";
 
 /**
  * Registers all CLI subcommands on the given commander program.
@@ -161,6 +162,29 @@ export function registerCommands(program: Command): void {
         filePath: resolveFilePath(file),
         slideId: opts.slideId,
         imageUrl: opts.imageUrl,
+      });
+      outputResult(result);
+    });
+
+  program
+    .command("batch <file>")
+    .description("Apply multiple slide operations from a JSON file")
+    .requiredOption("--ops <json>", "Operations array as JSON string")
+    .option("--theme <name>", "Theme name override")
+    .option("--style <name>", "Style name override")
+    .action(async (file: string, opts: { ops: string; theme?: string; style?: string }) => {
+      let operations: unknown[];
+      try {
+        operations = JSON.parse(opts.ops);
+      } catch {
+        process.stderr.write("Error: --ops must be valid JSON array\n");
+        process.exit(1);
+      }
+      const result = await batchManageSlides({
+        filePath: resolveFilePath(file),
+        operations: operations as Parameters<typeof batchManageSlides>[0]["operations"],
+        theme: opts.theme,
+        style: opts.style,
       });
       outputResult(result);
     });

@@ -132,12 +132,13 @@ section.acad-table tbody tr:nth-child(even) {
   display: grid;
   grid-template-columns: 3fr 2fr;
   gap: 1.5rem;
-  align-items: center;
+  align-items: start;
   margin-top: 0.8rem;
 }
 .acad-split img {
   width: 100%;
-  object-fit: cover;
+  max-height: 380px;
+  object-fit: contain;
   border-radius: 4px;
   border: 1px solid #dee2e6;
 }

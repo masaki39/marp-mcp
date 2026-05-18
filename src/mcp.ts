@@ -51,6 +51,10 @@ import {
   addImageTransitionSchema,
   addImageTransition,
 } from "./tools/add_image_transition.js";
+import {
+  batchManageSlidesSchema,
+  batchManageSlides,
+} from "./tools/batch_manage_slides.js";
 
 // Load version from package.json
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -168,6 +172,16 @@ export async function startMcpServer(): Promise<void> {
     addImageTransition
   );
 
+  server.tool(
+    "batch_manage_slides",
+    "Apply multiple slide operations (insert/replace/delete/move) to a Marp file in a single file read/write cycle. " +
+      "Equivalent to calling manage_slide multiple times but far more efficient for bulk edits. " +
+      "Operations are applied in order; first failure stops processing. " +
+      "Always call list_layouts first to discover valid layoutType values and their required params.",
+    batchManageSlidesSchema.shape,
+    batchManageSlides
+  );
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
@@ -175,6 +189,6 @@ export async function startMcpServer(): Promise<void> {
     theme: getActiveTheme().name,
     style: getActiveStyle().name,
     version: packageJson.version,
-    tools: ["list_themes_and_styles", "list_layouts", "generate_slide_ids", "manage_slide", "set_frontmatter", "read_slide", "export_slide", "create_presentation", "generate_agenda", "add_image_transition"],
+    tools: ["list_themes_and_styles", "list_layouts", "generate_slide_ids", "manage_slide", "batch_manage_slides", "set_frontmatter", "read_slide", "export_slide", "create_presentation", "generate_agenda", "add_image_transition"],
   });
 }

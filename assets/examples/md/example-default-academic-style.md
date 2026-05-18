@@ -134,12 +134,13 @@ style: |
     display: grid;
     grid-template-columns: 3fr 2fr;
     gap: 1.5rem;
-    align-items: center;
+    align-items: start;
     margin-top: 0.8rem;
   }
   .acad-split img {
     width: 100%;
-    object-fit: cover;
+    max-height: 380px;
+    object-fit: contain;
     border-radius: 4px;
     border: 1px solid #dee2e6;
   }
@@ -418,13 +419,19 @@ style: |
   section.img-fullscreen {
     padding: 0;
     background: #111;
+    overflow: hidden;
+  }
+  section.img-fullscreen > p {
+    position: absolute;
+    inset: 0;
+    margin: 0;
     display: flex;
     align-items: center;
     justify-content: center;
   }
   section.img-fullscreen img {
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
   }
   img[alt~="img-morph-1"] { view-transition-name: img-morph-1; }

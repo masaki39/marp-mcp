@@ -80,7 +80,8 @@ Omitting these flags defaults to `default` theme and `default` style.
 | `list_themes_and_styles` | List all available themes and styles; shows current server defaults |
 | `list_layouts` | List available slide layouts for a theme/style combination |
 | `create_presentation` | Create a new presentation with frontmatter and title slide in one step |
-| `manage_slide` | Insert, replace, or delete slides using slide IDs (ID-based operations) |
+| `manage_slide` | Insert, replace, delete, or move slides using slide IDs (ID-based operations) |
+| `batch_manage_slides` | Apply multiple slide operations in one call (single file read/write) |
 | `set_frontmatter` | Ensure `marp`, `theme`, `header`, and `paginate` frontmatter fields are present |
 | `read_slide` | Read slide content by ID or list all slides with their IDs and positions |
 | `generate_slide_ids` | Generate stable UUIDs for every slide (safe to re-run) |
