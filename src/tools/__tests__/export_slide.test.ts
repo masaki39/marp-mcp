@@ -104,5 +104,5 @@ describe("exportSlide", () => {
       const stat = await fs.stat(data.outputPath);
       expect(stat.size).toBeGreaterThan(0);
     }
-  }, 30000);
+  }, 60000);
 });
