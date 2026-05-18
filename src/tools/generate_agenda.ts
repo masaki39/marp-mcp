@@ -67,12 +67,15 @@ function addSectionIcon(slideContent: string, n: number): string {
     return slideContent;
   }
 
+  // Remove acad-section-num span (the numbered icon replaces this role)
+  const cleaned = slideContent.replace(/<span class="acad-section-num">[^<]*<\/span>\n*/g, "");
+
   const icon = `![${n} w:192 h:192](${iconUrl(n, ICON_COLOR_SECTION)} 'step')`;
-  const lines = slideContent.split("\n");
+  const lines = cleaned.split("\n");
   const headingIdx = lines.findIndex((l) => /^#{1,3}\s/.test(l));
 
   if (headingIdx === -1) {
-    return `${slideContent.trim()}\n\n${icon}`;
+    return `${cleaned.trim()}\n\n${icon}`;
   }
 
   lines.splice(headingIdx, 0, icon, "");
@@ -139,9 +142,10 @@ export async function generateAgenda({
 
   const agendaSlide = `## ${agendaHeading}\n\n${listItems}`;
 
-  // Insert agenda slide before the first section slide
-  const insertAt = sectionIndices[0];
-  slides.splice(insertAt, 0, agendaSlide);
+  // Insert agenda slide before each section slide (reverse order preserves indices)
+  for (const idx of [...sectionIndices].reverse()) {
+    slides.splice(idx, 0, agendaSlide);
+  }
 
   // Update frontmatter: add transition and step CSS
   let parsed: ReturnType<typeof matter>;
@@ -166,9 +170,9 @@ export async function generateAgenda({
   await fs.writeFile(filePath, newContent, "utf-8");
 
   return createSuccessResponse({
-    message: "Agenda slide generated and inserted successfully. Section slides updated with numbered icons for view-transition morphing.",
+    message: `Agenda slides generated and inserted before each of ${sectionIndices.length} section(s). Section slides updated with numbered icons for view-transition morphing.`,
     file: filePath,
-    agendaInsertedAt: insertAt,
+    agendaInsertedBeforeSections: sectionIndices,
     sectionsFound: sectionIndices.length,
     sectionTitles,
     note: "View transitions (morphing icons) work in HTML export only (export_slide with format='html').",

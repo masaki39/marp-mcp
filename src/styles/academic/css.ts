@@ -6,10 +6,6 @@
 export const academicCss = `
 /* ===== Academic Style for Marp ===== */
 
-section {
-  font-size: 0.95em;
-}
-
 /* --- Page Number --- */
 section::after {
   font-size: 0.6em;

@@ -49,7 +49,7 @@ describe("generate_agenda", () => {
     expect(text).toContain("No section slides found");
   });
 
-  it("inserts agenda slide before first section slide", async () => {
+  it("inserts agenda slide before each section slide", async () => {
     const filePath = path.join(tempDir, "slides.md");
     const content = makePresentation([
       "## Title\n\nAuthor",
@@ -63,8 +63,9 @@ describe("generate_agenda", () => {
     expect(result.isError).toBeUndefined();
 
     const updated = await fs.readFile(filePath, "utf-8");
-    // Agenda should be present
-    expect(updated).toContain("## Agenda");
+    // Agenda should appear twice (once before each section)
+    const agendaCount = (updated.match(/## Agenda/g) ?? []).length;
+    expect(agendaCount).toBe(2);
     expect(updated).toContain("Methods");
     expect(updated).toContain("Results");
     // Icons for agenda (gray)
@@ -108,6 +109,20 @@ describe("generate_agenda", () => {
     // Should not add a second icon
     const iconMatches = (updated.match(/w:192 h:192/g) ?? []).length;
     expect(iconMatches).toBe(1);
+  });
+
+  it("removes acad-section-num span when adding numbered icon", async () => {
+    const filePath = path.join(tempDir, "slides.md");
+    const content = makePresentation([
+      '<!-- _class: acad-section -->\n\n<span class="acad-section-num">01</span>\n\n## Methods',
+    ]);
+    await fs.writeFile(filePath, content, "utf-8");
+
+    await generateAgenda({ filePath, ...DEFAULTS });
+
+    const updated = await fs.readFile(filePath, "utf-8");
+    expect(updated).not.toContain("acad-section-num");
+    expect(updated).toContain("w:192 h:192");
   });
 
   it("respects custom sectionClass and agendaHeading", async () => {
