@@ -144,6 +144,23 @@ describe("generate_agenda", () => {
     expect(updated).toContain("## Today's Topics");
   });
 
+  it("is idempotent: calling twice does not duplicate agenda slides", async () => {
+    const filePath = path.join(tempDir, "slides.md");
+    const content = makePresentation([
+      "<!-- _class: acad-section -->\n\n## Methods",
+      "<!-- _class: acad-section -->\n\n## Results",
+    ]);
+    await fs.writeFile(filePath, content, "utf-8");
+
+    await generateAgenda({ filePath, ...DEFAULTS });
+    await generateAgenda({ filePath, ...DEFAULTS });
+
+    const updated = await fs.readFile(filePath, "utf-8");
+    // Each section should have exactly one agenda slide before it (not two)
+    const agendaCount = (updated.match(/## Agenda/g) ?? []).length;
+    expect(agendaCount).toBe(2);
+  });
+
   it("appends step CSS without duplicating if called twice", async () => {
     const filePath = path.join(tempDir, "slides.md");
     const content = makePresentation([

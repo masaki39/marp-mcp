@@ -8,7 +8,7 @@ import { promises as fs } from "fs";
 import { getLayout, getLayoutNames } from "./list_layouts.js";
 import { getActiveTheme, getTheme } from "../themes/index.js";
 import { getActiveStyle, getStyle } from "../styles/index.js";
-import { ensureSlideId, findSlideIndexById, generateSlideId } from "../utils/slide-id.js";
+import { ensureAllSlideIds, findSlideIndexById, generateSlideId } from "../utils/slide-id.js";
 import { validateFilePath } from "../utils/path-validator.js";
 import { parseFrontmatter, splitSlides, joinSlides } from "../utils/frontmatter.js";
 import { MAX_FILE_SIZE } from "../utils/constants.js";
@@ -78,13 +78,6 @@ export const manageSlideSchema = z.object({
 });
 
 /**
- * Ensures all slides in the array have IDs
- */
-function ensureAllSlidesHaveIds(slides: string[]): string[] {
-  return slides.map(slide => ensureSlideId(slide).content);
-}
-
-/**
  * Reads a Marp file and returns parsed frontmatter and slides with IDs.
  * Handles file read errors and size validation.
  */
@@ -115,8 +108,7 @@ async function readAndParseSlides(filePath: string): Promise<
   }
 
   const { frontmatter, body } = parseFrontmatter(existingContent);
-  let slides = splitSlides(body);
-  slides = ensureAllSlidesHaveIds(slides);
+  const slides = ensureAllSlideIds(splitSlides(body)).slides;
 
   return { ok: true, frontmatter, slides };
 }

@@ -10,7 +10,7 @@ import { z } from "zod";
 import matter from "gray-matter";
 import { validateFilePath } from "../utils/path-validator.js";
 import { createErrorResponse, createSuccessResponse } from "../utils/response.js";
-import { parseFrontmatter, splitSlides, joinSlides } from "../utils/frontmatter.js";
+import { splitSlides, joinSlides } from "../utils/frontmatter.js";
 import type { ToolResponse } from "../types/common.js";
 import { MAX_FILE_SIZE } from "../utils/constants.js";
 
@@ -105,8 +105,15 @@ export async function generateAgenda({
     );
   }
 
-  const { frontmatter, body } = parseFrontmatter(raw);
-  const slides = splitSlides(body);
+  let parsed: ReturnType<typeof matter>;
+  try {
+    parsed = matter(raw);
+  } catch {
+    return createErrorResponse("Failed to parse frontmatter YAML");
+  }
+
+  // Remove previously generated agenda slides for idempotency
+  const slides = splitSlides(parsed.content).filter(s => !s.includes("<!-- agenda-generated -->"));
 
   // Find section slides by _class comment
   const classPattern = new RegExp(`<!--\\s*_class:\\s*${sectionClass}\\s*-->`);
@@ -140,19 +147,11 @@ export async function generateAgenda({
     })
     .join("\n");
 
-  const agendaSlide = `## ${agendaHeading}\n\n${listItems}`;
+  const agendaSlide = `<!-- agenda-generated -->\n\n## ${agendaHeading}\n\n${listItems}`;
 
   // Insert agenda slide before each section slide (reverse order preserves indices)
   for (const idx of [...sectionIndices].reverse()) {
     slides.splice(idx, 0, agendaSlide);
-  }
-
-  // Update frontmatter: add transition and step CSS
-  let parsed: ReturnType<typeof matter>;
-  try {
-    parsed = matter(frontmatter + "\n");
-  } catch {
-    return createErrorResponse("Failed to parse frontmatter YAML");
   }
 
   const data = parsed.data as Record<string, unknown>;

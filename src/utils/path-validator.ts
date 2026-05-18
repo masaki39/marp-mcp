@@ -15,21 +15,18 @@ export function validateFilePath(
   filePath: string,
   allowedExtensions: string[] = [".md"]
 ): string | null {
-  // Check if path is absolute
   if (!isAbsolute(filePath)) {
     return "File path must be absolute";
   }
 
-  // Normalize and resolve the path
-  const normalized = normalize(filePath);
-  const resolved = resolve(normalized);
-
-  // Check for path traversal attempts
-  if (normalized !== filePath) {
-    return "File path contains invalid characters or path traversal sequences";
+  // Reject paths with .. segments (traversal), but allow . segments
+  const segments = filePath.split(/[/\\]/);
+  if (segments.some(s => s === "..")) {
+    return "File path contains path traversal sequences";
   }
 
-  // Check file extension
+  const resolved = resolve(normalize(filePath));
+
   if (allowedExtensions.length > 0) {
     const hasValidExtension = allowedExtensions.some((ext) =>
       resolved.endsWith(ext)

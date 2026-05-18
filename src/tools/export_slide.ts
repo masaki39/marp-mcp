@@ -6,7 +6,6 @@
 import { z } from "zod";
 import { spawn } from "child_process";
 import { promises as fs } from "fs";
-import { join } from "path";
 import { validateFilePath } from "../utils/path-validator.js";
 import { createErrorResponse, createSuccessResponse } from "../utils/response.js";
 import type { ToolResponse } from "../types/common.js";
@@ -50,12 +49,8 @@ export const exportSlideSchema = z.object({
     ),
 });
 
-/**
- * Resolves the marp CLI binary path.
- * Looks in node_modules/.bin relative to the current working directory (project root).
- */
 function getMarpBinPath(): string {
-  return join(process.cwd(), "node_modules", ".bin", "marp");
+  return "marp";
 }
 
 /**
@@ -92,7 +87,10 @@ function runCommand(
 
     proc.on("error", (err) => {
       clearTimeout(timer);
-      resolve({ exitCode: -1, stdout: "", stderr: err.message });
+      const msg = (err as NodeJS.ErrnoException).code === "ENOENT"
+        ? "marp command not found. Install with: npm install -g @marp-team/marp-cli"
+        : err.message;
+      resolve({ exitCode: -1, stdout: "", stderr: msg });
     });
   });
 }

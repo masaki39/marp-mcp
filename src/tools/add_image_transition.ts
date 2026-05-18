@@ -13,7 +13,7 @@ import { z } from "zod";
 import matter from "gray-matter";
 import { validateFilePath } from "../utils/path-validator.js";
 import { createErrorResponse, createSuccessResponse } from "../utils/response.js";
-import { parseFrontmatter, splitSlides, joinSlides } from "../utils/frontmatter.js";
+import { splitSlides, joinSlides } from "../utils/frontmatter.js";
 import { findSlideIndexById } from "../utils/slide-id.js";
 import type { ToolResponse } from "../types/common.js";
 import { MAX_FILE_SIZE } from "../utils/constants.js";
@@ -93,22 +93,20 @@ export async function addImageTransition({
     );
   }
 
-  const { frontmatter, body } = parseFrontmatter(raw);
-  const slides = splitSlides(body);
+  let parsed: ReturnType<typeof matter>;
+  try {
+    parsed = matter(raw);
+  } catch {
+    return createErrorResponse("Failed to parse frontmatter YAML");
+  }
+
+  const slides = splitSlides(parsed.content);
 
   const targetIndex = findSlideIndexById(slides, slideId);
   if (targetIndex === -1) {
     return createErrorResponse(
       `Slide not found: "${slideId}". Use read_slide to list available slide IDs.`
     );
-  }
-
-  // Update frontmatter: add transition and morph CSS
-  let parsed: ReturnType<typeof matter>;
-  try {
-    parsed = matter(frontmatter + "\n");
-  } catch {
-    return createErrorResponse("Failed to parse frontmatter YAML");
   }
 
   const data = parsed.data as Record<string, unknown>;
