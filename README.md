@@ -264,19 +264,15 @@ Rendered samples (GitHub Pages):
 |--------|-------------|
 | `title` | Academic title slide with author, affiliation, and date |
 | `section` | Maroon section divider with optional number |
-| `content` | Free-form markdown content slide |
+| `content` | Free-form markdown content slide. Add sidebarTitle/sidebarItems to show a sidebar panel on the right side. |
 | `list` | Bullet point list with optional citations |
-| `table` | Table with maroon header |
-| `two-column` | Two-column panel layout for comparisons or parallel content |
+| `table` | Table with maroon header. Write the table in standard markdown format. |
+| `two-column` | Two-column panel layout. Use panelStyle='comparison' to highlight right panel (maroon) vs left panel (gray) for conventional vs proposed comparisons. |
 | `image-right` | Content on left, image on right (60:40 split) |
-| `image-center` | Centered image with description |
-| `figure-caption` | Figure with numbered caption and source attribution |
+| `image-center` | Centered image slide. Set figNumber to switch to figure-caption mode (renders 'Fig. X.' label with optional source attribution). |
 | `key-message` | Conclusion or key takeaway box with maroon highlight |
 | `methodology` | Method step flow diagram (use 'Label|Description' format for steps) |
-| `comparison` | Side-by-side comparison (e.g., conventional vs proposed method) |
 | `statistics` | Academic statistics display with maroon numbers (use 'Number|Label' format) |
-| `sidebar` | Main content with sidebar for definitions, notes, or references |
-| `results-table` | Results table with best-value highlighting (prefix cell with * to highlight) |
 
 </details>
 

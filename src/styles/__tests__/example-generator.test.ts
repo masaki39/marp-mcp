@@ -115,6 +115,8 @@ const richLayoutParams: Record<string, Record<string, unknown>> = {
   content: {
     heading: "Summary",
     body: "This is a **free-form** markdown slide.\n\n- Point one\n- Point two\n- Point three",
+    sidebarTitle: "Key Terms",
+    sidebarItems: ["API Gateway: Entry point", "Event Bus: Async messaging", "Service Mesh: Networking"],
   },
   quote: {
     quote: "The best way to predict the future is to invent it.",
@@ -136,14 +138,6 @@ const richLayoutParams: Record<string, Record<string, unknown>> = {
     statement: "Less is More",
     subtitle: "The power of simplicity in design",
   },
-  "figure-caption": {
-    heading: "Experimental Results",
-    imagePath: SAMPLE_IMAGE,
-    figNumber: "1",
-    caption: "Comparison of treatment groups over 12-week period",
-    source: "Adapted from Smith et al., 2024",
-    citations: "Smith J, et al. J Exp Med. 2024;15(3):102-110.",
-  },
   "key-message": {
     heading: "Conclusions",
     title: "Key Finding",
@@ -162,14 +156,6 @@ const richLayoutParams: Record<string, Record<string, unknown>> = {
     ],
     citations: "Protocol registered: UMIN000012345",
   },
-  comparison: {
-    heading: "Method Comparison",
-    leftTitle: "Conventional Method",
-    leftList: ["Manual feature extraction", "Linear classifier", "Limited scalability"],
-    rightTitle: "Proposed Method",
-    rightList: ["Automated feature learning", "Deep neural network", "Highly scalable"],
-    citations: "Based on benchmark results from Dataset X",
-  },
   terminal: {
     heading: "Quick Start",
     terminalTitle: "bash",
@@ -179,6 +165,20 @@ const richLayoutParams: Record<string, Record<string, unknown>> = {
       "$ npm run dev",
       "Server running on http://localhost:3000",
     ],
+  },
+  sidebar: {
+    heading: "Architecture Overview",
+    content: "The system uses a **microservices** architecture with event-driven communication.\n\n- API Gateway handles routing\n- Each service owns its data",
+    sidebarTitle: "Key Terms",
+    sidebarItems: ["API Gateway: Entry point", "Event Bus: Async messaging", "Service Mesh: Networking"],
+  },
+  comparison: {
+    heading: "Method Comparison",
+    leftTitle: "Conventional Method",
+    leftList: ["Manual feature extraction", "Linear classifier", "Limited scalability"],
+    rightTitle: "Proposed Method",
+    rightList: ["Automated feature learning", "Deep neural network", "Highly scalable"],
+    citations: "Based on benchmark results from Dataset X",
   },
   "three-column": {
     heading: "Three Pillars",
@@ -197,12 +197,6 @@ const richLayoutParams: Record<string, Record<string, unknown>> = {
       "Product Roadmap|30 min",
       "Q&A|15 min",
     ],
-  },
-  sidebar: {
-    heading: "Architecture Overview",
-    content: "The system uses a **microservices** architecture with event-driven communication.\n\n- API Gateway handles routing\n- Each service owns its data",
-    sidebarTitle: "Key Terms",
-    sidebarItems: ["API Gateway: Entry point", "Event Bus: Async messaging", "Service Mesh: Networking"],
   },
   "progress-bar": {
     heading: "Project Completion",
@@ -297,16 +291,6 @@ const richLayoutParams: Record<string, Record<string, unknown>> = {
     bottomRightTitle: "Low Impact / High Effort",
     bottomRightItems: ["Legacy cleanup", "Over-engineering"],
   },
-  "results-table": {
-    heading: "Model Performance",
-    headers: ["Model", "Accuracy", "F1 Score", "Latency"],
-    rows: [
-      "Baseline|88.2|85.1|120ms",
-      "Model A|92.5|*90.3|95ms",
-      "Model B|*94.1|89.7|*80ms",
-    ],
-    caption: "Table 1: Comparison on benchmark dataset. * indicates best value.",
-  },
 };
 
 describe("style example generator", () => {
@@ -345,7 +329,7 @@ describe("style example generator", () => {
 });
 
 // Layouts that contain an image eligible for morphing transitions
-const IMAGE_LAYOUTS = new Set(["image-center", "figure-caption", "image-right"]);
+const IMAGE_LAYOUTS = new Set(["image-center", "image-right"]);
 
 const ICON_BASE = "https://icongr.am/material/numeric-{N}-circle.svg";
 

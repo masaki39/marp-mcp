@@ -8,13 +8,9 @@ import { tableLayout } from "./layouts/table.js";
 import { twoColumnLayout } from "./layouts/two-column.js";
 import { imageRightLayout } from "./layouts/image-right.js";
 import { imageCenterLayout } from "./layouts/image-center.js";
-import { figureCaptionLayout } from "./layouts/figure-caption.js";
 import { keyMessageLayout } from "./layouts/key-message.js";
 import { methodologyLayout } from "./layouts/methodology.js";
-import { comparisonLayout } from "./layouts/comparison.js";
 import { statisticsLayout } from "./layouts/statistics.js";
-import { sidebarLayout } from "./layouts/sidebar.js";
-import { resultsTableLayout } from "./layouts/results-table.js";
 
 export const academicStyle: StyleDefinition = {
   name: "academic",
@@ -31,12 +27,8 @@ export const academicStyle: StyleDefinition = {
     "two-column": twoColumnLayout,
     "image-right": imageRightLayout,
     "image-center": imageCenterLayout,
-    "figure-caption": figureCaptionLayout,
     "key-message": keyMessageLayout,
     methodology: methodologyLayout,
-    comparison: comparisonLayout,
     statistics: statisticsLayout,
-    sidebar: sidebarLayout,
-    "results-table": resultsTableLayout,
   },
 };

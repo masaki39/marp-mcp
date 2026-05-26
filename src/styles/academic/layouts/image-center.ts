@@ -21,7 +21,8 @@ function getImageConstraint(imagePath: string, hPx: number): string {
 
 export const imageCenterLayout: SlideLayout = {
   name: "image-center",
-  description: "Centered image with description",
+  description:
+    "Centered image slide. Set figNumber to switch to figure-caption mode (renders 'Fig. X.' label with optional source attribution).",
   className: "acad-img-center",
   params: {
     heading: {
@@ -35,17 +36,29 @@ export const imageCenterLayout: SlideLayout = {
       description: "Image file path (local paths supported)",
       required: true,
     },
-    description: {
+    figNumber: {
       type: "string",
-      description: "Image description below image (no line break)",
+      description: "Figure number (e.g., '1', '2a'). When set, renders as 'Fig. X.' format and enables source param.",
       required: false,
-      maxLength: 75,
+      maxLength: 5,
     },
     caption: {
       type: "string",
-      description: "Image caption displayed below",
+      description: "Short figure label shown directly below the image (e.g., 'Fig. 1: Overview of the method'). Use this for a one-line label.",
       required: false,
       maxLength: 120,
+    },
+    source: {
+      type: "string",
+      description: "Source attribution appended to caption (e.g., 'Adapted from Smith et al., 2024'). Only rendered when figNumber is set.",
+      required: false,
+      maxLength: 100,
+    },
+    description: {
+      type: "string",
+      description: "Explanatory text shown below the image as slide body (distinct from caption: use for a sentence or two of explanation, not a label).",
+      required: false,
+      maxLength: 75,
     },
     citations: {
       type: "string",
@@ -55,6 +68,24 @@ export const imageCenterLayout: SlideLayout = {
     },
   },
   template: (params) => {
+    if (params.figNumber) {
+      // Figure-caption mode: acad-figure wrapper with "Fig. X." format
+      const hPx = params.citations ? 380 : 430;
+      let slide = `## ${params.heading}\n\n`;
+      slide += `<div class="acad-figure">\n\n`;
+      slide += `![center ${getImageConstraint(params.imagePath as string, hPx)}](${params.imagePath})\n\n`;
+      slide += `<div class="acad-figure-caption"><strong>Fig. ${params.figNumber}.</strong> ${params.caption ?? ""}`;
+      if (params.source) {
+        slide += ` (${params.source})`;
+      }
+      slide += `</div>\n</div>`;
+      if (params.citations) {
+        slide += `\n\n> ${params.citations}`;
+      }
+      return slide;
+    }
+
+    // Default image-center mode
     let slide = `<!-- _class: acad-img-center -->\n\n`;
     slide += `## ${params.heading}\n\n`;
 

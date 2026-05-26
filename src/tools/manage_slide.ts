@@ -365,6 +365,12 @@ export async function manageSlide({
           );
         }
       }
+
+      if (paramDef.enum && typeof value === "string" && !paramDef.enum.includes(value)) {
+        return createErrorResponse(
+          `Parameter "${paramName}" must be one of: ${paramDef.enum.map((v) => `"${v}"`).join(", ")} (got: "${value}")`
+        );
+      }
     }
   }
 

@@ -9,6 +9,7 @@ export interface SlideLayout {
       required: boolean;
       maxLength?: number;
       maxItems?: number;
+      enum?: string[];
     };
   };
   template: (params: Record<string, unknown>) => string;

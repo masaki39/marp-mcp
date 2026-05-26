@@ -436,7 +436,6 @@ style: |
   }
   img[alt~="img-morph-1"] { view-transition-name: img-morph-1; }
   img[alt~="img-morph-2"] { view-transition-name: img-morph-2; }
-  img[alt~="img-morph-3"] { view-transition-name: img-morph-3; }
   img[title~="step"] {
     height: 1em;
     position: relative;
@@ -474,11 +473,25 @@ Diving deeper into the details
 <!-- layout: content -->
 ## Summary
 
+<div class="acad-sidebar-layout">
+<div class="acad-sidebar-main">
+
 This is a **free-form** markdown slide.
 
 - Point one
 - Point two
 - Point three
+
+</div>
+<div class="acad-sidebar" style="font-size: 0.8em">
+<h4>Key Terms</h4>
+<ul>
+<li>API Gateway: Entry point</li>
+<li>Event Bus: Async messaging</li>
+<li>Service Mesh: Networking</li>
+</ul>
+</div>
+</div>
 
 ---
 
@@ -587,29 +600,6 @@ Step-by-step overview.
 
 ---
 
-<!-- _class: img-fullscreen -->
-<!-- _paginate: false -->
-<!-- _header: "" -->
-<!-- _footer: "" -->
-
-![img-morph-3](https://picsum.photos/1280/720)
-
----
-
-<!-- layout: figure-caption -->
-## Experimental Results
-
-<div class="acad-figure">
-
-![img-morph-3 center h:380](https://picsum.photos/1280/720)
-
-<div class="acad-figure-caption"><strong>Fig. 1.</strong> Comparison of treatment groups over 12-week period (Adapted from Smith et al., 2024)</div>
-</div>
-
-> Smith J, et al. J Exp Med. 2024;15(3):102-110.
-
----
-
 <!-- layout: key-message -->
 ## Conclusions
 
@@ -659,32 +649,6 @@ Step-by-step overview.
 
 ---
 
-<!-- layout: comparison -->
-## Method Comparison
-
-<div class="acad-comparison">
-<div class="acad-comparison-panel">
-<h3>Conventional Method</h3>
-<ul>
-<li>Manual feature extraction</li>
-<li>Linear classifier</li>
-<li>Limited scalability</li>
-</ul>
-</div>
-<div class="acad-comparison-panel">
-<h3>Proposed Method</h3>
-<ul>
-<li>Automated feature learning</li>
-<li>Deep neural network</li>
-<li>Highly scalable</li>
-</ul>
-</div>
-</div>
-
-> Based on benchmark results from Dataset X
-
----
-
 <!-- layout: statistics -->
 ## Impact at a Glance
 
@@ -708,43 +672,3 @@ Step-by-step overview.
 </div>
 
 <p style="text-align:center;color:#475569;font-size:0.85em;">Data as of Q4 2025</p>
-
----
-
-<!-- layout: sidebar -->
-## Architecture Overview
-
-<div class="acad-sidebar-layout">
-<div class="acad-sidebar-main">
-
-The system uses a **microservices** architecture with event-driven communication.
-
-- API Gateway handles routing
-- Each service owns its data
-
-</div>
-<div class="acad-sidebar" style="font-size: 0.8em">
-<h4>Key Terms</h4>
-<ul>
-<li>API Gateway: Entry point</li>
-<li>Event Bus: Async messaging</li>
-<li>Service Mesh: Networking</li>
-</ul>
-</div>
-</div>
-
----
-
-<!-- layout: results-table -->
-## Model Performance
-
-<p class="acad-table-caption">Table 1: Comparison on benchmark dataset. * indicates best value.</p>
-
-<table class="acad-results-table" style="font-size: 0.85em">
-<thead><tr><th>Model</th><th>Accuracy</th><th>F1 Score</th><th>Latency</th></tr></thead>
-<tbody>
-<tr><td>Baseline</td><td>88.2</td><td>85.1</td><td>120ms</td></tr>
-<tr><td>Model A</td><td>92.5</td><td class="acad-highlight-cell">90.3</td><td>95ms</td></tr>
-<tr><td>Model B</td><td class="acad-highlight-cell">94.1</td><td>89.7</td><td class="acad-highlight-cell">80ms</td></tr>
-</tbody>
-</table>
