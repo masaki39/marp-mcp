@@ -23,10 +23,14 @@ export interface ThemeDefinition {
   layouts: Record<string, SlideLayout>;
 }
 
+// Built-in style names. The runtime registry also accepts externally
+// registered names discovered from marp-cli config (`themeSet`); those
+// names cannot be enumerated statically, so `StyleDefinition.name` is
+// widened to `string` and lookup APIs accept any string.
 export type StyleName = "default" | "rich" | "minimal" | "dark" | "corporate" | "academic" | "tech";
 
 export interface StyleDefinition {
-  name: StyleName;
+  name: string;
   description: string;
   compatibleThemes: ThemeName[];
   css: string;

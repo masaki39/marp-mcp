@@ -14,6 +14,9 @@ importers:
       commander:
         specifier: ^14.0.3
         version: 14.0.3
+      cosmiconfig:
+        specifier: ^9.0.1
+        version: 9.0.1(typescript@5.9.3)
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
