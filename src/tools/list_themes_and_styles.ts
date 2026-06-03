@@ -6,7 +6,12 @@
 
 import { z } from "zod";
 import { getAvailableThemeNames, getTheme, getActiveTheme } from "../themes/index.js";
-import { getAvailableStyleNames, getStyle, getActiveStyle } from "../styles/index.js";
+import {
+  getAvailableStyleNames,
+  getStyle,
+  getActiveStyle,
+  getExternalStyles,
+} from "../styles/index.js";
 import type { ToolResponse } from "../types/common.js";
 
 export const listThemesAndStylesSchema = z.object({});
@@ -30,8 +35,12 @@ export async function listThemesAndStyles(): Promise<ToolResponse> {
     };
   });
 
+  const externalNames = new Set(
+    getExternalStyles().map((entry) => entry.def.name)
+  );
+
   const styles = styleNames
-    .filter((name) => name !== "default")
+    .filter((name) => name !== "default" && !externalNames.has(name))
     .map((name) => {
       const style = getStyle(name)!;
       return {
@@ -45,6 +54,17 @@ export async function listThemesAndStyles(): Promise<ToolResponse> {
         layouts: Object.keys(style.layouts),
       };
     });
+
+  const externalStyles = getExternalStyles().map(({ def, source }) => ({
+    name: def.name,
+    description: def.description,
+    compatibleThemes:
+      def.compatibleThemes.length > 0 ? def.compatibleThemes : ["all themes"],
+    layoutCount: Object.keys(def.layouts).length,
+    layouts: Object.keys(def.layouts),
+    source,
+    external: true as const,
+  }));
 
   return {
     content: [
@@ -65,7 +85,7 @@ export async function listThemesAndStyles(): Promise<ToolResponse> {
                 "Styles add layouts on top of themes. Use list_layouts to see the merged layout list for a specific theme+style combination.",
             },
             themes,
-            styles,
+            styles: [...styles, ...externalStyles],
           },
           null,
           2

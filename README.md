@@ -73,6 +73,24 @@ Use `-t` / `--theme` and `-s` / `--style` args to set the server-wide default. C
 
 Omitting these flags defaults to `default` theme and `default` style.
 
+### External styles via marp-cli config
+
+If a marp-cli configuration file (`.marprc.{yml,yaml,json,js,cjs,mjs}`, `marp.config.{js,cjs,mjs}`, or a `marp` field in `package.json`) is found anywhere up the directory tree at server start, every CSS file listed under its `themeSet` field is registered as an MCP style. The style name is read from the file's `/* @theme NAME */` directive (lowercased). External entries reuse the active theme's layouts, so all existing tools work unchanged.
+
+```yaml
+# .marprc.yml
+themeSet:
+  - ./themes/sample.css
+```
+
+```css
+/* themes/sample.css */
+/* @theme sample */
+section { background: #fff; }
+```
+
+`sample` is then a valid value for `-s` and shows up in `list_themes_and_styles` with `"external": true` and the absolute CSS path under `source`. Built-in style names are protected; any external collision is logged and skipped.
+
 ## 🛠️ Tools
 
 | Tool | Description |
