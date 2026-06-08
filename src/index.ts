@@ -20,6 +20,7 @@ import {
   setActiveStyle,
 } from "./styles/index.js";
 import { error as logError } from "./utils/logger.js";
+import { discoverExternalStyles } from "./utils/external-styles.js";
 import { startMcpServer } from "./mcp.js";
 import { registerCommands } from "./cli/commands.js";
 
@@ -87,6 +88,11 @@ program
 
 // Register CLI subcommands
 registerCommands(program);
+
+// Discover external styles (marp-cli `themeSet` via cosmiconfig) before
+// commander parses, so external names are valid arguments for `-s <name>`
+// and appear in the registry surfaced to MCP tools.
+await discoverExternalStyles();
 
 program.parseAsync().catch((err) => {
   logError("Fatal error", {

@@ -396,7 +396,7 @@ function addSectionIconInline(slideContent: string, n: number): string {
 }
 
 function buildExampleMarkdown(
-  styleName: StyleName,
+  styleName: string,
   layouts: Record<string, { template: (params: Record<string, unknown>) => string }>,
   layoutNames: string[],
 ): string {
