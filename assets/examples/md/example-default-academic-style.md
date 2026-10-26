@@ -455,14 +455,14 @@ style: |
 
 ## Agenda
 
-- ![1](https://icongr.am/material/numeric-1-circle.svg?color=666666 'step') Part Two
+- ![1](https://raw.githubusercontent.com/masaki39/marp-mcp/main/assets/icons/numeric-1-circle-666666.svg 'step') Part Two
 
 ---
 
 <!-- layout: section -->
 <!-- _class: acad-section -->
 
-![1 w:192 h:192](https://icongr.am/material/numeric-1-circle.svg?color=ffffff 'step')
+![1 w:192 h:192](https://raw.githubusercontent.com/masaki39/marp-mcp/main/assets/icons/numeric-1-circle-ffffff.svg 'step')
 
 ## Part Two
 

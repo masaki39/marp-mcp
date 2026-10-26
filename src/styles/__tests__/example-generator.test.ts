@@ -331,7 +331,8 @@ describe("style example generator", () => {
 // Layouts that contain an image eligible for morphing transitions
 const IMAGE_LAYOUTS = new Set(["image-center", "image-right"]);
 
-const ICON_BASE = "https://icongr.am/material/numeric-{N}-circle.svg";
+const ICON_BASE =
+  "https://raw.githubusercontent.com/masaki39/marp-mcp/main/assets/icons/numeric-{N}-circle-{COLOR}.svg";
 
 const IMG_FULLSCREEN_CSS = `section.img-fullscreen {
   padding: 0;
@@ -386,7 +387,7 @@ function extractHeading(slideContent: string): string {
 
 function addSectionIconInline(slideContent: string, n: number): string {
   if (slideContent.includes("'step'") || slideContent.includes('"step"')) return slideContent;
-  const url = `${ICON_BASE.replace("{N}", String(n))}?color=ffffff`;
+  const url = ICON_BASE.replace("{N}", String(n)).replace("{COLOR}", "ffffff");
   const icon = `![${n} w:192 h:192](${url} 'step')`;
   const lines = slideContent.split("\n");
   const hi = lines.findIndex((l) => /^#{1,3}\s/.test(l));
@@ -460,7 +461,7 @@ function buildExampleMarkdown(
       const agendaItems = sectionIndices
         .map((idx, i) => {
           const n = i + 1;
-          const url = `${ICON_BASE.replace("{N}", String(n))}?color=666666`;
+          const url = ICON_BASE.replace("{N}", String(n)).replace("{COLOR}", "666666");
           return `- ![${n}](${url} 'step') ${extractHeading(slides[idx])}`;
         })
         .join("\n");

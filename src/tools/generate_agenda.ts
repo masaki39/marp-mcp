@@ -28,7 +28,8 @@ export const generateAgendaSchema = z.object({
     .describe("Heading text for the generated agenda slide"),
 });
 
-const ICON_BASE = "https://icongr.am/material/numeric-{N}-circle.svg";
+const ICON_BASE =
+  "https://raw.githubusercontent.com/masaki39/marp-mcp/main/assets/icons/numeric-{N}-circle-{COLOR}.svg";
 const ICON_COLOR_AGENDA = "666666";
 const ICON_COLOR_SECTION = "ffffff";
 
@@ -49,7 +50,7 @@ ${transitionRules}`;
 }
 
 function iconUrl(n: number, color: string): string {
-  return `${ICON_BASE.replace("{N}", String(n))}?color=${color}`;
+  return ICON_BASE.replace("{N}", String(n)).replace("{COLOR}", color);
 }
 
 function extractSectionTitle(slideContent: string): string {
